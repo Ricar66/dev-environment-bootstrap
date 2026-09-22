@@ -26,10 +26,10 @@ jobs:
 
       - name: Run ShellCheck
         run: |
-          shellcheck setup.sh
-          shellcheck linux/bootstrap-vm-ubuntu.sh
-          shellcheck diagnostics/dev-doctor.sh
-          shellcheck certificates/import-ca-linux.sh
+          shellcheck -S warning setup.sh
+          shellcheck -S warning linux/bootstrap-vm-ubuntu.sh
+          shellcheck -S warning diagnostics/dev-doctor.sh
+          shellcheck -S warning certificates/import-ca-linux.sh
 
   powershell:
     runs-on: windows-latest

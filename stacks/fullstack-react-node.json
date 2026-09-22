@@ -1,0 +1,7 @@
+{
+  "name": "Full Stack React + Node",
+  "slug": "fullstack-react-node",
+  "description": "React no frontend, Node/NestJS no backend, Docker e SQL.",
+  "base_profile": "fullstack",
+  "modules": ["react", "nestjs", "sql"]
+}

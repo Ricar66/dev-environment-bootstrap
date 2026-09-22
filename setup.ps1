@@ -11,6 +11,11 @@ $configRunner = Join-Path $root "tools\run-config.ps1"
 $updater = Join-Path $root "tools\update-devkit.ps1"
 $inventory = Join-Path $root "tools\inventory.ps1"
 $cleanup = Join-Path $root "tools\cleanup.ps1"
+$showState = Join-Path $root "tools\show-state.ps1"
+$backupVsCode = Join-Path $root "tools\backup-vscode.ps1"
+$restoreVsCode = Join-Path $root "tools\restore-vscode.ps1"
+$backupGit = Join-Path $root "tools\backup-git.ps1"
+$restoreGit = Join-Path $root "tools\restore-git.ps1"
 $configExample = Join-Path $root "config\devkit.config.example.json"
 $configLocal = Join-Path $root "config\devkit.config.json"
 $versionFile = Join-Path $root "VERSION"
@@ -39,11 +44,15 @@ function Read-Profile {
     }
 }
 
+function Pause-Menu {
+    Read-Host "Pressione Enter para voltar" | Out-Null
+}
+
 function Show-Menu {
     Clear-Host
-    Write-Host "================================================" -ForegroundColor Cyan
-    Write-Host "              SUPER DEV KIT v$version" -ForegroundColor Cyan
-    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "====================================================" -ForegroundColor Cyan
+    Write-Host "                 SUPER DEV KIT v$version" -ForegroundColor Cyan
+    Write-Host "====================================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "1.  Instalar por perfil"
     Write-Host "2.  Instalar tudo"
@@ -52,11 +61,17 @@ function Show-Menu {
     Write-Host "5.  Executar configuração JSON"
     Write-Host "6.  Dry-run da configuração JSON"
     Write-Host "7.  Dev Doctor"
-    Write-Host "8.  Exportar inventário do ambiente"
-    Write-Host "9.  Atualizar Super Dev Kit"
-    Write-Host "10. Preview de cleanup/uninstall"
-    Write-Host "11. Exportar certificado CA confiável"
-    Write-Host "12. Criar configuração local a partir do exemplo"
+    Write-Host "8.  Ver manifesto/estado local"
+    Write-Host "9.  Exportar inventário do ambiente"
+    Write-Host "10. Atualizar Super Dev Kit"
+    Write-Host "11. Preview de cleanup baseado no manifesto"
+    Write-Host "12. Backup do VS Code"
+    Write-Host "13. Preview de restore do VS Code"
+    Write-Host "14. Backup da configuração Git"
+    Write-Host "15. Preview de restore da configuração Git"
+    Write-Host "16. Exportar certificado CA confiável"
+    Write-Host "17. Criar configuração local a partir do exemplo"
+    Write-Host "18. Mostrar exemplos Docker"
     Write-Host "0.  Sair"
     Write-Host ""
 }
@@ -72,34 +87,47 @@ while ($true) {
     switch ($choice) {
         "1" {
             $profile = Read-Profile
-            if ($profile) { & $installer -Profile $profile }
-            else { Write-Host "Perfil inválido." -ForegroundColor Yellow; Start-Sleep 1 }
+            if ($profile) {
+                & $installer -Profile $profile
+            }
+            else {
+                Write-Host "Perfil inválido." -ForegroundColor Yellow
+            }
+            Pause-Menu
         }
         "2" {
             & $installer -All
+            Pause-Menu
         }
         "3" {
             $profile = Read-Profile
-            if ($profile) { & $installer -Profile $profile -DryRun }
-            else { Write-Host "Perfil inválido." -ForegroundColor Yellow; Start-Sleep 1 }
-            Read-Host "Pressione Enter para voltar"
+            if ($profile) {
+                & $installer -Profile $profile -DryRun
+            }
+            else {
+                Write-Host "Perfil inválido." -ForegroundColor Yellow
+            }
+            Pause-Menu
         }
         "4" {
             $profile = Read-Profile
-            if ($profile) { & $extensions -Profile $profile }
-            else { Write-Host "Perfil inválido." -ForegroundColor Yellow }
-            Read-Host "Pressione Enter para voltar"
+            if ($profile) {
+                & $extensions -Profile $profile
+            }
+            else {
+                Write-Host "Perfil inválido." -ForegroundColor Yellow
+            }
+            Pause-Menu
         }
         "5" {
             if (-not (Test-Path $configLocal)) {
                 Write-Host "Configuração local não encontrada." -ForegroundColor Yellow
-                Write-Host "Use a opção 12 primeiro ou copie:"
-                Write-Host "  config\devkit.config.example.json -> config\devkit.config.json"
+                Write-Host "Use a opção 17 primeiro."
             }
             else {
                 & $configRunner -ConfigPath $configLocal
             }
-            Read-Host "Pressione Enter para voltar"
+            Pause-Menu
         }
         "6" {
             if (-not (Test-Path $configLocal)) {
@@ -108,36 +136,50 @@ while ($true) {
             else {
                 & $configRunner -ConfigPath $configLocal -DryRun
             }
-            Read-Host "Pressione Enter para voltar"
+            Pause-Menu
         }
         "7" {
             & $doctor
-            Read-Host "Pressione Enter para voltar"
+            Pause-Menu
         }
         "8" {
-            & $inventory
-            Read-Host "Pressione Enter para voltar"
+            & $showState
+            Pause-Menu
         }
         "9" {
-            & $updater
-            Read-Host "Pressione Enter para voltar"
+            & $inventory
+            Pause-Menu
         }
         "10" {
-            $profile = Read-Profile
-            if ($profile -and $profile -ne "Essential") {
-                & $cleanup -Profile $profile
-            }
-            else {
-                Write-Host "Cleanup não é executado para o perfil Essential." -ForegroundColor Yellow
-            }
-            Read-Host "Pressione Enter para voltar"
+            & $updater
+            Pause-Menu
         }
         "11" {
-            $search = Read-Host "Texto para procurar no certificado (ex.: senac.check, Zscaler, Fortinet)"
-            & $certExporter -Search $search
-            Read-Host "Pressione Enter para voltar"
+            & $cleanup
+            Pause-Menu
         }
         "12" {
+            & $backupVsCode
+            Pause-Menu
+        }
+        "13" {
+            & $restoreVsCode
+            Pause-Menu
+        }
+        "14" {
+            & $backupGit
+            Pause-Menu
+        }
+        "15" {
+            & $restoreGit
+            Pause-Menu
+        }
+        "16" {
+            $search = Read-Host "Texto para procurar no certificado (ex.: senac.check, Zscaler, Fortinet)"
+            & $certExporter -Search $search
+            Pause-Menu
+        }
+        "17" {
             if (Test-Path $configLocal) {
                 Write-Host "config\devkit.config.json já existe." -ForegroundColor Yellow
             }
@@ -146,7 +188,11 @@ while ($true) {
                 Write-Host "[OK] Configuração criada:" -ForegroundColor Green
                 Write-Host "     $configLocal"
             }
-            Read-Host "Pressione Enter para voltar"
+            Pause-Menu
+        }
+        "18" {
+            Get-Content (Join-Path $root "examples\README.md")
+            Pause-Menu
         }
         "0" {
             return

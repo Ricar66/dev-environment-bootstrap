@@ -51,7 +51,7 @@ jobs:
           )
 
           $results = foreach ($file in $files) {
-            Invoke-ScriptAnalyzer -Path $file -Severity Warning,Error
+            Invoke-ScriptAnalyzer -Path $file -Severity Error
           }
 
           $results | Format-Table

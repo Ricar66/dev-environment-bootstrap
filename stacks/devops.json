@@ -1,0 +1,7 @@
+{
+  "name": "DevOps",
+  "slug": "devops",
+  "description": "Docker, YAML, SSH e utilitários de infraestrutura.",
+  "base_profile": "devops",
+  "modules": ["devops"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Python",
+  "slug": "python",
+  "description": "Python, pip, venv e extensões recomendadas.",
+  "base_profile": "backend",
+  "modules": ["python"]
+}

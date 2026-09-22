@@ -77,12 +77,23 @@ log "[6/10] Docker"
 DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io
 systemctl enable --now docker
 
-if apt-cache show docker-compose-v2 >/dev/null 2>&1; then
+# Evita conflito entre docker-compose-v2 (Ubuntu) e docker-compose-plugin
+# (repositório oficial da Docker). Se "docker compose" já funciona, não instala
+# outro pacote concorrente.
+if docker compose version >/dev/null 2>&1; then
+  echo "Docker Compose já está disponível; mantendo a implementação instalada."
+elif dpkg-query -W -f='${Status}' docker-compose-plugin 2>/dev/null | grep -q "install ok installed"; then
+  echo "docker-compose-plugin já está instalado; não instalando docker-compose-v2."
+elif dpkg-query -W -f='${Status}' docker-compose-v2 2>/dev/null | grep -q "install ok installed"; then
+  echo "docker-compose-v2 já está instalado."
+elif apt-cache show docker-compose-v2 >/dev/null 2>&1; then
   DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-v2
 elif apt-cache show docker-compose-plugin >/dev/null 2>&1; then
   DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-plugin
 elif apt-cache show docker-compose >/dev/null 2>&1; then
   DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose
+else
+  echo "AVISO: nenhum pacote Docker Compose compatível foi encontrado."
 fi
 
 log "[7/10] Permissões"

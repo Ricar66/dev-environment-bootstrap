@@ -1,0 +1,7 @@
+{
+  "name": "Java",
+  "slug": "java",
+  "description": "JDK LTS e pacote de extensões Java.",
+  "base_profile": "backend",
+  "modules": ["java", "docker"]
+}

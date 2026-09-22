@@ -1,0 +1,56 @@
+name: Generate CLI Media
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "tools/generate-cli-media.py"
+      - ".github/workflows/media-capture.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-cli-media
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install media dependency
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Generate real CLI captures
+        run: python tools/generate-cli-media.py
+
+      - name: Validate generated documentation
+        run: python tools/check-docs.py
+
+      - name: Publish generated media branch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B media/generated-cli-captures
+          git add README.md docs/media/generated/
+
+          if git diff --cached --quiet; then
+            echo "Generated media is already up to date."
+            exit 0
+          fi
+
+          git commit -m "docs: atualiza capturas reais da CLI"
+          git push --force origin HEAD:refs/heads/media/generated-cli-captures

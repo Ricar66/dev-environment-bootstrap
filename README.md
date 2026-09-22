@@ -17,6 +17,8 @@ A ideia central é:
 
 ## 📖 Para quem está começando
 
+**Idioma do Quick Start:** [Português](docs/QUICKSTART.md) · [English](docs/QUICKSTART.en.md)
+
 Você não precisa ler o repositório inteiro.
 
 Use esta ordem:
@@ -288,7 +290,8 @@ O kit consegue preparar Docker e Docker Compose e possui exemplos em:
 examples/
 ├── nginx/
 ├── mysql/
-└── postgres/
+├── postgres/
+└── redis/
 ~~~
 
 Teste básico:

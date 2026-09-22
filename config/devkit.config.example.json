@@ -1,0 +1,17 @@
+{
+  "profile": "fullstack",
+  "install_vscode_extensions": true,
+  "git": {
+    "name": "",
+    "email": ""
+  },
+  "features": {
+    "docker": true,
+    "wsl": true,
+    "extras": false
+  },
+  "certificate": {
+    "auto": false,
+    "path": ""
+  }
+}

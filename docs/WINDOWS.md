@@ -8,64 +8,60 @@
 - privilégios de administrador
 - conexão com a internet
 
-## Execução básica
+## Primeiro uso
 
-Abra o PowerShell como Administrador e entre na pasta do repositório:
+Se o Git ainda não estiver instalado:
+
+```powershell
+winget install --id Git.Git -e
+```
+
+Depois:
+
+```powershell
+git clone https://github.com/Ricar66/dev-environment-bootstrap.git
+cd dev-environment-bootstrap
+```
+
+Abra o PowerShell como Administrador:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-.\windows\setup-windows.ps1
+.\setup.ps1
 ```
 
-O `Set-ExecutionPolicy -Scope Process Bypass` altera a política apenas para aquela sessão do PowerShell.
+A alteração da Execution Policy vale apenas para a sessão atual.
 
 ## Perfis
 
-### Base
+Execução direta:
 
 ```powershell
-.\windows\setup-windows.ps1
+.\windows\setup-windows.ps1 -Profile Essential
+.\windows\setup-windows.ps1 -Profile Frontend
+.\windows\setup-windows.ps1 -Profile Backend
+.\windows\setup-windows.ps1 -Profile FullStack
+.\windows\setup-windows.ps1 -Profile DataSQL
+.\windows\setup-windows.ps1 -Profile DevOps
 ```
 
-Instala Git, Node.js LTS, VS Code, PowerShell 7, Windows Terminal, GitHub CLI e 7-Zip.
-
-### Docker Desktop
-
-```powershell
-.\windows\setup-windows.ps1 -Docker
-```
-
-### WSL
-
-```powershell
-.\windows\setup-windows.ps1 -WSL
-```
-
-Algumas alterações do WSL exigem reinicialização.
-
-### Extras
-
-```powershell
-.\windows\setup-windows.ps1 -Extras
-```
-
-### Tudo
+Para instalar o conjunto mais completo:
 
 ```powershell
 .\windows\setup-windows.ps1 -All
 ```
 
+Consulte [PROFILES.md](PROFILES.md) para saber o que cada perfil instala.
+
 ## Configurando o Git
 
-Você pode passar sua identidade diretamente:
+Você pode passar sua identidade:
 
 ```powershell
-.\windows\setup-windows.ps1 `
-  -GitName "Seu Nome" `
-  -GitEmail "seu-email@exemplo.com"
+.\windows\setup-windows.ps1 -Profile Frontend -GitName "Seu Nome" -GitEmail "seu-email@exemplo.com"
 ```
 
-Ou configurar depois:
+Ou configurar manualmente:
 
 ```powershell
 git config --global user.name "Seu Nome"
@@ -73,27 +69,34 @@ git config --global user.email "seu-email@exemplo.com"
 git config --global init.defaultBranch main
 ```
 
+## Certificados de rede corporativa
+
+Não instale certificado adicional sem necessidade.
+
+Se uma VM ou ferramenta apresentar erro TLS/x509, descubra o emissor e use:
+
+```powershell
+.\certificates\export-root-ca.ps1 -Search "nome-do-emissor"
+```
+
+Veja [CERTIFICADOS-CORPORATIVOS.md](CERTIFICADOS-CORPORATIVOS.md).
+
 ## Verificação
 
-Feche e reabra o terminal e execute:
+```powershell
+.\diagnostics\dev-doctor.ps1
+```
+
+Também pode conferir individualmente:
 
 ```powershell
 git --version
 node --version
 npm --version
-code --version
+python --version
+docker --version
+docker compose version
 gh --version
 ```
 
-Se instalou Docker:
-
-```powershell
-docker --version
-docker compose version
-```
-
-Também é possível executar:
-
-```powershell
-.\diagnostics\dev-doctor.ps1
-```
+Nem todos os comandos estarão presentes em todos os perfis.

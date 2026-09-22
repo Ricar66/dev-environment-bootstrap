@@ -18,6 +18,7 @@ ORIGINAL_USER="${SUDO_USER:-$USER}"
 PROFILE="essential"
 CA_FILE=""
 AUTO_CA=0
+DRY_RUN=0
 
 usage() {
   cat <<'EOF'
@@ -28,6 +29,7 @@ Opções:
   --profile PERFIL   essential | frontend | backend | fullstack | datasql | devops
   --ca ARQUIVO       instala um certificado CA .cer/.crt
   --auto-ca          procura certificados em Downloads, /media e /mnt
+  --dry-run          mostra o plano sem alterar a máquina
   -h, --help         mostra esta ajuda
 EOF
 }
@@ -44,6 +46,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --auto-ca)
       AUTO_CA=1
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=1
       shift
       ;;
     -h|--help)
@@ -91,12 +97,58 @@ fail() {
   exit 1
 }
 
-[[ "${EUID}" -eq 0 ]] || fail "Execute com sudo: sudo bash $0"
+if [[ "$DRY_RUN" -ne 1 ]]; then
+  [[ "${EUID}" -eq 0 ]] || fail "Execute com sudo: sudo bash $0"
+fi
+
 command -v apt-get >/dev/null 2>&1 || fail "Este script requer apt (Ubuntu/Debian)."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CA_HELPER="$REPO_ROOT/certificates/import-ca-linux.sh"
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "============================================================"
+  echo "SUPER DEV KIT - DRY RUN"
+  echo "============================================================"
+  echo "Perfil: $PROFILE"
+  echo "Certificado informado: ${CA_FILE:-nenhum}"
+  echo "Busca automática de CA: $AUTO_CA"
+  echo
+  echo "Pacotes base:"
+  echo "  ca-certificates curl wget git unzip zip nano vim htop tree jq"
+  echo "  openssl gnupg lsb-release software-properties-common"
+  echo "  net-tools iproute2 iputils-ping dnsutils traceroute build-essential"
+  echo "  openssh-server docker.io"
+  echo
+  echo "Pacotes do perfil:"
+  case "$PROFILE" in
+    essential|devops)
+      echo "  (nenhum adicional)"
+      ;;
+    frontend)
+      echo "  nodejs npm"
+      ;;
+    backend|fullstack)
+      echo "  nodejs npm python3 python3-pip python3-venv sqlite3"
+      ;;
+    datasql)
+      echo "  python3 python3-pip python3-venv sqlite3 postgresql-client default-mysql-client"
+      ;;
+  esac
+  echo
+  echo "Outras ações planejadas:"
+  echo "  - habilitar SSH"
+  echo "  - instalar/validar Docker Compose"
+  echo "  - adicionar usuário ao grupo docker"
+  echo "  - configurar VirtualBox Guest Utilities se aplicável"
+  echo "  - testar HTTPS e hello-world"
+  [[ "$AUTO_CA" -eq 1 ]] && echo "  - procurar e importar CA corporativa"
+  [[ -n "$CA_FILE" ]] && echo "  - validar/importar CA: $CA_FILE"
+  echo
+  echo "Nenhuma alteração foi feita."
+  exit 0
+fi
 
 log "[1/11] Informações do sistema"
 echo "Usuário: $ORIGINAL_USER"

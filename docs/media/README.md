@@ -1,90 +1,98 @@
 # Mídia pública
 
-Esta pasta documenta as capturas que serão usadas na divulgação do Super Dev Kit.
+As capturas públicas do Super Dev Kit devem ser baseadas em **execuções reais da CLI**.
+
+A partir da v1.0, elas são geradas por:
+
+~~~text
+python tools/generate-cli-media.py
+~~~
+
+O script executa a CLI, sanitiza dados específicos da máquina e renderiza os resultados em imagens de terminal.
+
+## Arquivos gerados
+
+A automação cria em docs/media/generated/:
+
+~~~text
+cli-help.png
+setup-fullstack-dry-run.png
+dev-doctor.png
+project-react-vite-dry-run.png
+cli-demo.gif
+capture-manifest.json
+~~~
+
+O GIF é construído a partir das mesmas capturas reais.
+
+## Comandos capturados
+
+~~~text
+devkit help
+devkit setup fullstack --dry-run
+devkit doctor
+devkit project react-vite demo --dry-run
+~~~
+
+No workflow Linux, os launchers são executados como bash devkit.sh ....
+
+## Sanitização
+
+Antes de renderizar, o gerador remove ou substitui:
+
+- caminhos absolutos do repositório;
+- diretório home;
+- usuário;
+- hostname;
+- endereços IPv4;
+- e-mails;
+- caminho temporário usado pela captura.
+
+A saída longa pode ser encurtada apenas para caber no layout visual. O manifesto registra o comando e o exit code real de cada execução.
 
 ## Regra de segurança
 
-Antes de publicar uma imagem ou GIF, confira se ela não mostra:
+Antes de publicar qualquer nova mídia, confirme que ela não mostra:
 
-- nome de usuário pessoal desnecessário;
+- nome de usuário pessoal;
 - hostname corporativo;
 - IP interno;
 - tokens;
 - e-mail privado;
-- caminhos com nomes de clientes;
+- nomes de clientes;
 - certificados internos;
 - histórico de terminal com segredos.
 
-## Capturas planejadas
+## Regra de autenticidade
 
-### 1. CLI help
+Imagens geradas por IA podem ser usadas como **capa promocional**, mas nunca como evidência de que a CLI foi executada.
 
-Comando:
+As screenshots e a demo técnica do README devem vir do gerador de mídia ou de uma captura real revisada.
 
-~~~text
-devkit help
+## Geração automática
+
+O workflow .github/workflows/media-capture.yml roda quando o gerador de mídia é alterado na main.
+
+Ele:
+
+1. executa os comandos reais;
+2. gera screenshots e GIF;
+3. atualiza a seção de mídia do README;
+4. envia os arquivos para uma branch dedicada;
+5. permite revisão antes do merge final.
+
+## Execução local
+
+Instale Pillow:
+
+~~~bash
+python -m pip install pillow
 ~~~
 
-Nome sugerido:
+Depois:
 
-~~~text
-cli-help.png
+~~~bash
+python tools/generate-cli-media.py
 ~~~
 
-### 2. Dry-run de setup
-
-~~~text
-devkit setup fullstack --dry-run
-~~~
-
-Nome sugerido:
-
-~~~text
-setup-dry-run.png
-~~~
-
-### 3. Dev Doctor
-
-~~~text
-devkit doctor
-~~~
-
-Nome sugerido:
-
-~~~text
-dev-doctor.png
-~~~
-
-### 4. Project generator
-
-~~~text
-devkit project react-vite demo --dry-run
-~~~
-
-Nome sugerido:
-
-~~~text
-project-generator.png
-~~~
-
-### 5. Demo curta
-
-Fluxo recomendado para GIF/vídeo:
-
-~~~text
-git clone ...
-cd dev-environment-bootstrap
-devkit.cmd version
-devkit.cmd setup fullstack --dry-run
-devkit.cmd doctor
-~~~
-
-No Linux, use bash devkit.sh antes de instalar o shim global.
-
-## Tamanho
-
-Para README, prefira largura entre 1200 e 1600 px, terminal com fonte legível e sem excesso de espaço vazio.
-
-## Status
-
-Os arquivos visuais devem ser capturados de uma execução real e revisados antes de entrar no README. Não use imagens geradas por IA como evidência de funcionamento da CLI.
+Revise todos os arquivos antes de publicá-los.

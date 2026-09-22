@@ -4,6 +4,14 @@ set -Eeuo pipefail
 PROFILE="essential"
 DRY_RUN=0
 
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STATE_HELPER="$TOOLS_DIR/state.sh"
+
+if [[ -f "$STATE_HELPER" ]]; then
+  # shellcheck source=/dev/null
+  source "$STATE_HELPER"
+fi
+
 usage() {
   cat <<'EOF'
 Uso:
@@ -122,8 +130,16 @@ for extension in "${extensions[@]}"; do
   [[ -n "${seen[$extension]:-}" ]] && continue
   seen["$extension"]=1
 
+  preexisting="false"
+
   if printf '%s\n' "${installed[@]}" | grep -Fxq "$extension"; then
+    preexisting="true"
     echo "[OK] $extension já instalada."
+
+    if [[ "$DRY_RUN" -ne 1 ]] && declare -F state_register_extension >/dev/null 2>&1; then
+      state_register_extension "$extension" "true" "true" || true
+    fi
+
     continue
   fi
 
@@ -132,6 +148,17 @@ for extension in "${extensions[@]}"; do
   else
     echo "[INSTALANDO] $extension"
     code --install-extension "$extension" --force
+
+    present_after="false"
+    code --list-extensions 2>/dev/null | grep -Fxq "$extension" && present_after="true"
+
+    if declare -F state_register_extension >/dev/null 2>&1; then
+      state_register_extension "$extension" "$preexisting" "$present_after" || true
+    fi
+
+    if declare -F log_event >/dev/null 2>&1; then
+      log_event "info" "vscode_extension_installed" "$extension" || true
+    fi
   fi
 done
 

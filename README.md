@@ -1,207 +1,84 @@
 # 🚀 Super Dev Kit
 
-**Prepare, valide e reproduza ambientes de desenvolvimento no Windows e Ubuntu/Linux com uma única CLI.**
+**Uma CLI open source para preparar, validar e reproduzir ambientes de desenvolvimento no Windows e Ubuntu/Linux.**
 
 [![Validate Super Dev Kit](https://github.com/Ricar66/dev-environment-bootstrap/actions/workflows/lint.yml/badge.svg)](https://github.com/Ricar66/dev-environment-bootstrap/actions/workflows/lint.yml)
 [![Public Readiness](https://github.com/Ricar66/dev-environment-bootstrap/actions/workflows/public-readiness.yml/badge.svg)](https://github.com/Ricar66/dev-environment-bootstrap/actions/workflows/public-readiness.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%2F24.04-orange)
 
-O Super Dev Kit automatiza tarefas repetitivas de onboarding: Git, Node.js, Python, Docker, SSH, VS Code, clientes SQL, stacks, templates, diagnóstico e reprodução de ambientes.
+O **Super Dev Kit** reduz o trabalho repetitivo de configurar uma máquina de desenvolvimento. Em vez de instalar e validar manualmente Git, Node.js, Python, Docker, SSH, VS Code, ferramentas SQL e utilitários em cada notebook, VM ou laboratório, você usa uma única interface para planejar, executar e diagnosticar o ambiente.
 
-A filosofia é simples: **dry-run primeiro, segurança por padrão e a mesma intenção em Windows e Linux.**
+A ideia central é:
 
-## ⚡ Comece em poucos minutos
+> **dry-run primeiro, segurança por padrão e uma experiência consistente entre Windows e Linux.**
 
-### 1. Clone
+## 📖 Para quem está começando
+
+Você não precisa ler o repositório inteiro.
+
+Use esta ordem:
+
+1. [Quick Start](docs/QUICKSTART.md) — instalação rápida;
+2. [Manual do Usuário](docs/USER-MANUAL.md) — passo a passo completo;
+3. [Troubleshooting](docs/TROUBLESHOOTING.md) — resolução de problemas;
+4. [FAQ](docs/FAQ.md) — dúvidas frequentes.
+
+## ⚡ Instalação rápida
+
+Clone:
 
 ~~~text
 git clone https://github.com/Ricar66/dev-environment-bootstrap.git
 cd dev-environment-bootstrap
 ~~~
 
-### 2. Veja o plano antes de instalar
+### Windows — CMD
 
-Windows — CMD:
+Veja o plano:
 
 ~~~cmd
 devkit.cmd setup fullstack --dry-run
 ~~~
 
-Windows — PowerShell:
+Instale:
+
+~~~cmd
+devkit.cmd setup fullstack
+devkit.cmd doctor
+~~~
+
+### Windows — PowerShell
 
 ~~~powershell
 .\devkit.ps1 setup fullstack --dry-run
+.\devkit.ps1 setup fullstack
+.\devkit.ps1 doctor
 ~~~
 
-Ubuntu/Linux:
+### Ubuntu/Linux
 
 ~~~bash
 bash devkit.sh setup fullstack --dry-run
+bash devkit.sh setup fullstack
+bash devkit.sh doctor
 ~~~
 
-### 3. Execute e valide
+## ⌨️ CLI única
 
-Depois de revisar o dry-run:
-
-~~~text
-devkit setup fullstack
-devkit doctor
-~~~
-
-Antes de instalar o comando global, use devkit.cmd, .\devkit.ps1 ou bash devkit.sh.
-
-Guia completo: [Quick Start](docs/QUICKSTART.md).
-
-## ✨ O que ele faz
-
-| Recurso | Exemplo |
-| --- | --- |
-| Setup por perfil | devkit setup fullstack |
-| Diagnóstico | devkit doctor |
-| Stacks | devkit stack react |
-| Geração de projetos | devkit project react-vite meu-app |
-| Version managers | devkit runtime node 22 --manager fnm |
-| Estado local | devkit state |
-| Export de ambiente | devkit export |
-| Import reproduzível | devkit import --dry-run |
-| Comparação / drift | devkit compare |
-| Backup | devkit backup vscode |
-| Inventário | devkit inventory |
-| Cleanup controlado | devkit cleanup |
-| Atualização segura | devkit update |
-| Automação JSON | devkit state --json |
-
-## 🧩 Perfis
-
-- **Essential** — base de desenvolvimento;
-- **Frontend** — Node.js e ferramentas web;
-- **Backend** — Node.js, Python, Docker e APIs;
-- **Full Stack** — frontend + backend + containers;
-- **Data / SQL** — Python, SQL e clientes de banco;
-- **DevOps** — Docker, SSH e ferramentas de infraestrutura.
-
-Veja [Perfis](docs/PROFILES.md).
-
-## 🧰 Stacks
-
-Stacks combinam módulos reutilizáveis.
-
-Exemplos:
-
-~~~text
-devkit stack react --dry-run
-devkit stack node-nest --dry-run
-devkit stack fullstack-react-node --dry-run
-~~~
-
-O catálogo inclui React, Node/NestJS, .NET, Python, Java, PHP, Data/SQL e DevOps.
-
-Veja [Stacks](docs/STACKS.md) e [Arquitetura de módulos](docs/MODULES.md).
-
-## 🏗️ Templates de projeto
-
-~~~text
-devkit project list
-devkit project react-vite meu-app --dry-run
-devkit project python-api minha-api
-~~~
-
-Templates atuais:
-
-- React + Vite;
-- Node + NestJS;
-- .NET Web API;
-- Python + FastAPI;
-- Docker Compose.
-
-Dev Containers podem ser adicionados opcionalmente.
-
-Veja [Project Templates](docs/PROJECT-TEMPLATES.md).
-
-## 🩺 Dev Doctor
-
-~~~text
-devkit doctor
-~~~
-
-O diagnóstico verifica itens aplicáveis, como:
-
-- espaço em disco;
-- Git, curl e ferramentas core;
-- runtimes;
-- Docker e Compose;
-- SSH;
-- DNS e HTTPS;
-- manifesto local;
-- drift.
-
-Veja [Dev Doctor](docs/DEV-DOCTOR.md).
-
-## 🔁 Ambientes reproduzíveis
-
-Na máquina de origem:
-
-~~~text
-devkit export
-~~~
-
-Na máquina de destino:
-
-~~~text
-devkit import --dry-run
-devkit import
-devkit compare
-~~~
-
-O lock file representa a intenção do ambiente sem exportar senhas, tokens, chaves privadas ou conteúdo de certificados.
-
-Veja [Ambientes reproduzíveis](docs/REPRODUCIBILITY.md).
-
-## 🤖 Automação
-
-A CLI possui saída JSON:
-
-~~~text
-devkit version --json
-devkit state --json
-devkit stack react --dry-run --json
-~~~
-
-Veja [Automação JSON](docs/JSON-AUTOMATION.md).
-
-## 🔐 Redes corporativas e certificados
-
-**Certificado adicional é opcional.**
-
-Se Docker e HTTPS funcionarem, não faça nada.
-
-Se aparecer erro como:
-
-~~~text
-x509: certificate signed by unknown authority
-~~~
-
-use o fluxo documentado de CA autorizada.
-
-O projeto não distribui certificados internos e não recomenda desabilitar TLS.
-
-Veja [Certificados corporativos](docs/CERTIFICADOS-CORPORATIVOS.md).
-
-## ⌨️ Instalar o comando global
-
-Depois de validar o clone:
+Depois de validar o clone, você pode instalar o comando global:
 
 Windows:
 
-~~~text
+~~~cmd
 devkit.cmd cli install
 ~~~
 
 Linux:
 
-~~~text
+~~~bash
 bash devkit.sh cli install
 ~~~
 
@@ -209,124 +86,400 @@ Abra um novo terminal:
 
 ~~~text
 devkit version
+devkit help
 ~~~
 
-O shim aponta para o clone atual. Se mover o repositório, reinstale o shim.
+A partir daí, a experiência principal é:
 
-Veja [CLI](docs/CLI.md).
+~~~text
+devkit setup fullstack
+devkit doctor
+devkit stack react
+devkit project react-vite meu-app
+devkit runtime node 22 --manager fnm
+devkit state
+devkit export
+devkit import --dry-run
+devkit compare
+devkit backup vscode
+devkit inventory
+devkit cleanup
+devkit update
+~~~
+
+## ✨ Principais recursos
+
+### Setup por perfil
+
+~~~text
+devkit setup essential
+devkit setup frontend
+devkit setup backend
+devkit setup fullstack
+devkit setup datasql
+devkit setup devops
+~~~
+
+Perfis permitem preparar apenas o necessário para cada tipo de uso.
+
+### Dry-run
+
+Antes de alterar a máquina:
+
+~~~text
+devkit setup fullstack --dry-run
+devkit stack react --dry-run
+devkit project react-vite meu-app --dry-run
+~~~
+
+### Dev Doctor
+
+~~~text
+devkit doctor
+~~~
+
+Verifica saúde do ambiente, Docker, rede, runtimes, manifesto e drift.
+
+### Stacks
+
+~~~text
+devkit stack react
+devkit stack node-nest
+devkit stack fullstack-react-node
+~~~
+
+Stacks combinam módulos reutilizáveis sem duplicar regras de instalação.
+
+### Templates de projeto
+
+~~~text
+devkit project list
+devkit project react-vite meu-app
+devkit project python-api minha-api
+~~~
+
+Templates atuais incluem:
+
+- React + Vite;
+- Node + NestJS;
+- .NET Web API;
+- Python + FastAPI;
+- Docker Compose.
+
+### Dev Containers
+
+~~~text
+devkit project react-vite meu-app --with-devcontainer
+~~~
+
+### Version managers
+
+~~~text
+devkit runtime list
+devkit runtime node 22 --manager fnm --dry-run
+~~~
+
+O Super Dev Kit usa adapters para version managers já existentes e não baixa managers automaticamente.
+
+### Estado local
+
+~~~text
+devkit state
+~~~
+
+O estado fica em:
+
+~~~text
+.super-dev-kit/manifest.json
+~~~
+
+Ele ajuda o projeto a distinguir o que já existia do que foi instalado pelo kit.
+
+### Ambientes reproduzíveis
+
+Na máquina original:
+
+~~~text
+devkit export
+~~~
+
+Na nova máquina:
+
+~~~text
+devkit import --dry-run
+devkit import
+devkit compare
+devkit doctor
+~~~
+
+### Automação JSON
+
+~~~text
+devkit version --json
+devkit state --json
+devkit stack react --dry-run --json
+~~~
+
+Útil para CI, scripts e integrações.
+
+## 🧩 Perfis disponíveis
+
+| Perfil | Indicado para | Base principal |
+| --- | --- | --- |
+| Essential | ambiente mínimo | Git, terminal e utilitários |
+| Frontend | desenvolvimento web | Node.js, npm, VS Code |
+| Backend | APIs e serviços | Node.js, Python, Docker |
+| Full Stack | aplicações completas | frontend + backend + containers |
+| Data / SQL | estudos e dados | Python, SQL e clientes |
+| DevOps | infraestrutura | Docker, SSH e utilitários |
+
+Detalhes: [Perfis](docs/PROFILES.md).
 
 ## 🖥️ Plataformas
 
-| Plataforma | Status |
+| Plataforma | Status v1 |
 | --- | --- |
-| Windows 11 | Suportado |
-| Windows 10 | Suportado |
-| CMD | Suportado |
-| Windows PowerShell 5.1 | Suportado |
-| PowerShell 7 | Suportado |
-| Ubuntu 24.04 | Suportado |
-| Ubuntu 22.04 | Compatível |
-| VirtualBox + Ubuntu | Suportado |
-| WSL 2 | Parcial |
-| macOS | Ainda não suportado |
+| Windows 11 | ✅ Suportado |
+| Windows 10 | ✅ Suportado com winget |
+| CMD | ✅ Suportado |
+| Windows PowerShell 5.1 | ✅ Suportado |
+| PowerShell 7 | ✅ Suportado |
+| Ubuntu 24.04 | ✅ Suportado |
+| Ubuntu 22.04 | 🟡 Compatível |
+| VirtualBox + Ubuntu | ✅ Suportado |
+| WSL 2 | 🟡 Parcial |
+| macOS | ❌ Fora de suporte |
+| Fedora | ❌ Fora de suporte |
 
-Detalhes: [Matriz de suporte](docs/SUPPORT-MATRIX.md).
+Veja [Matriz de suporte](docs/SUPPORT-MATRIX.md).
+
+## 🔐 Certificados corporativos
+
+A maioria das máquinas **não precisa** de certificado adicional.
+
+Se isto funcionar:
+
+~~~text
+docker run --rm hello-world
+~~~
+
+não faça nenhuma configuração extra.
+
+Somente em redes com inspeção HTTPS você pode encontrar:
+
+~~~text
+x509: certificate signed by unknown authority
+~~~
+
+Nesse caso, siga [Certificados corporativos](docs/CERTIFICADOS-CORPORATIVOS.md).
+
+O projeto:
+
+- não distribui certificados internos;
+- não armazena certificados privados;
+- não recomenda desativar TLS;
+- mostra informações do certificado antes da importação.
+
+## 🐳 Docker
+
+O kit consegue preparar Docker e Docker Compose e possui exemplos em:
+
+~~~text
+examples/
+├── nginx/
+├── mysql/
+└── postgres/
+~~~
+
+Teste básico:
+
+~~~text
+docker version
+docker compose version
+docker run --rm hello-world
+~~~
+
+## 🔁 Reprodutibilidade e drift
+
+O Super Dev Kit trabalha com três conceitos:
+
+**Manifesto local:** o que o kit observou/gerenciou na máquina.
+
+**Lock file:** intenção portátil do ambiente.
+
+**Drift:** diferença entre o estado esperado e o estado real.
+
+Fluxo:
+
+~~~text
+devkit setup
+devkit doctor
+devkit export
+        ↓
+devkit.lock.json
+        ↓
+devkit import --dry-run
+devkit import
+devkit compare
+devkit doctor
+~~~
+
+Veja [Ambientes reproduzíveis](docs/REPRODUCIBILITY.md).
+
+## 🧹 Cleanup seguro
+
+Preview:
+
+~~~text
+devkit cleanup
+~~~
+
+Aplicar:
+
+~~~text
+devkit cleanup --apply
+~~~
+
+O cleanup usa o manifesto para preservar, sempre que possível, itens que já existiam antes do kit.
+
+## 🔄 Atualização
+
+~~~text
+devkit update
+~~~
+
+ou:
+
+~~~text
+git pull
+~~~
+
+O updater bloqueia a atualização quando existem alterações locais não salvas.
 
 ## 🏛️ Arquitetura
 
-A CLI é uma camada fina de orquestração.
+A CLI é fina e delega para componentes especializados.
 
 ~~~text
+Usuário
+  ↓
 devkit
-  │
-  ├─ scripts Windows/Linux
-  ├─ Dev Doctor
-  ├─ módulos e stacks
-  ├─ templates
-  ├─ version managers
-  └─ manifesto / lock file
+  ↓
+CLI unificada
+  ↓
+scripts Windows / Linux / diagnostics / tools
+  ↓
+módulos + stacks + templates + versões
+  ↓
+manifesto / lock file
 ~~~
 
-As regras não são duplicadas entre CMD, PowerShell e Bash.
+Isso reduz duplicação entre CMD, PowerShell e Bash.
 
 Veja [Arquitetura](docs/ARCHITECTURE.md).
 
 ## 🛡️ Segurança
 
-O projeto busca:
+Princípios da v1:
 
-- não desabilitar TLS;
-- não versionar segredos;
-- preservar software preexistente no cleanup;
-- exigir ação explícita para mudanças sensíveis;
-- usar dry-run sempre que possível;
-- não baixar version managers automaticamente;
-- manter certificados corporativos fora do Git.
+- dry-run antes de mudanças importantes;
+- TLS não é desabilitado para esconder erros;
+- certificados corporativos são opcionais;
+- segredos não devem entrar no repositório;
+- cleanup é baseado em manifesto;
+- sobrescrita de projeto exige ação explícita;
+- version managers não são baixados automaticamente;
+- update usa fluxo Git previsível;
+- Docker no grupo docker é tratado como acesso privilegiado.
 
-Leia [SECURITY.md](SECURITY.md).
+Leia:
+
+- [Política de Segurança](SECURITY.md)
+- [Threat Model](docs/THREAT-MODEL.md)
 
 ## 🧪 Qualidade
 
-Pull requests passam por validações em runners descartáveis:
+A validação automatizada cobre:
 
-- Bash syntax + ShellCheck;
-- PowerShell Script Analyzer;
+- Bash + ShellCheck;
 - Windows PowerShell 5.1;
 - PowerShell 7;
 - CMD;
-- Ubuntu/Linux;
+- Ubuntu;
 - JSON;
-- geração de templates;
-- estado/lock file;
+- templates;
+- CLI;
+- estado e lock file;
 - UTF-8;
-- links locais da documentação;
-- onboarding em Ubuntu 24.04 descartável.
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas.
-
-Comece por:
-
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [Código de Conduta](CODE_OF_CONDUCT.md)
-- [Como adicionar stacks](docs/ADDING-STACKS.md)
-- [Como adicionar templates](docs/ADDING-TEMPLATES.md)
-- [Como adicionar adapters](docs/ADDING-ADAPTERS.md)
-
-## 🆘 Ajuda
-
-- [FAQ](docs/FAQ.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
-- [Quick Start](docs/QUICKSTART.md)
-- [Matriz de suporte](docs/SUPPORT-MATRIX.md)
-
-Ao reportar um bug, inclua devkit version e devkit doctor, removendo dados sensíveis.
+- links locais;
+- onboarding Ubuntu 24.04 descartável.
 
 ## 📚 Documentação
 
+### Usuário
+
+- [Manual do Usuário](docs/USER-MANUAL.md)
 - [Quick Start](docs/QUICKSTART.md)
 - [CLI](docs/CLI.md)
-- [Arquitetura](docs/ARCHITECTURE.md)
+- [FAQ](docs/FAQ.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Matriz de suporte](docs/SUPPORT-MATRIX.md)
 - [Perfis](docs/PROFILES.md)
 - [Stacks](docs/STACKS.md)
-- [Módulos](docs/MODULES.md)
 - [Project Templates](docs/PROJECT-TEMPLATES.md)
 - [Version Manager Adapters](docs/VERSION-MANAGERS.md)
 - [Dev Doctor](docs/DEV-DOCTOR.md)
 - [Ambientes reproduzíveis](docs/REPRODUCIBILITY.md)
 - [Automação JSON](docs/JSON-AUTOMATION.md)
 - [Certificados corporativos](docs/CERTIFICADOS-CORPORATIVOS.md)
-- [Windows](docs/WINDOWS.md)
-- [Ubuntu / VM](docs/UBUNTU-VM.md)
-- [VirtualBox + SSH](docs/VIRTUALBOX-SSH.md)
+
+### Projeto e contribuição
+
+- [Arquitetura](docs/ARCHITECTURE.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [Código de Conduta](CODE_OF_CONDUCT.md)
+- [Versionamento](docs/VERSIONING.md)
+- [Processo de Release](docs/RELEASE-PROCESS.md)
+- [Threat Model](docs/THREAT-MODEL.md)
+- [Como adicionar stacks](docs/ADDING-STACKS.md)
+- [Como adicionar templates](docs/ADDING-TEMPLATES.md)
+- [Como adicionar adapters](docs/ADDING-ADAPTERS.md)
 - [Roadmap](docs/ROADMAP.md)
 
-## 📦 Versão
+## 🤝 Contribuições
 
-Versão em desenvolvimento desta branch: **0.9.0**.
+Issues e pull requests são bem-vindos.
 
-Veja [CHANGELOG.md](CHANGELOG.md) e as [release notes da v0.9](docs/releases/v0.9.0.md).
+Há tarefas marcadas como **good first issue** para quem quiser contribuir pela primeira vez.
+
+Antes de abrir um PR, leia [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 🆘 Reportar um problema
+
+Antes de abrir uma issue:
+
+~~~text
+devkit version
+devkit doctor
+devkit state
+~~~
+
+Nunca publique:
+
+- tokens;
+- senhas;
+- chaves privadas;
+- certificados internos;
+- dados de clientes;
+- informações privadas desnecessárias.
+
+## 📦 Versão estável
+
+**v1.0.0**
+
+A partir da v1, o projeto segue [Semantic Versioning](docs/VERSIONING.md).
+
+Release notes: [v1.0.0](docs/releases/v1.0.0.md).
 
 ## 📄 Licença
 

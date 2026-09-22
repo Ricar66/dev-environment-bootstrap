@@ -86,6 +86,7 @@ PY
 PROFILE="$(read_json profile)"
 PROFILE="${PROFILE:-essential}"
 INSTALL_EXTENSIONS="$(read_json install_vscode_extensions)"
+NON_INTERACTIVE="$(read_json non_interactive)"
 CA_AUTO="$(read_json certificate.auto)"
 CA_PATH="$(read_json certificate.path)"
 GIT_NAME="$(read_json git.name)"
@@ -114,6 +115,10 @@ fi
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
   installer_args+=(--dry-run)
+fi
+
+if [[ "$NON_INTERACTIVE" == "true" ]]; then
+  installer_args+=(--yes)
 fi
 
 echo "Configuração: $CONFIG_PATH"

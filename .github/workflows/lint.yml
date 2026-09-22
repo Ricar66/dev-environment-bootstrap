@@ -37,6 +37,10 @@ jobs:
           bash -n tools/restore-git.sh
           bash -n tools/install-stack.sh
           bash -n tools/stack-wizard.sh
+          bash -n tools/check-runtime-versions.sh
+          bash -n tools/export-environment.sh
+          bash -n tools/import-environment.sh
+          bash -n tools/compare-environment.sh
 
       - name: Run ShellCheck
         run: |
@@ -57,11 +61,18 @@ jobs:
           shellcheck -S warning tools/restore-git.sh
           shellcheck -S warning tools/install-stack.sh
           shellcheck -S warning tools/stack-wizard.sh
+          shellcheck -S warning tools/check-runtime-versions.sh
+          shellcheck -S warning tools/export-environment.sh
+          shellcheck -S warning tools/import-environment.sh
+          shellcheck -S warning tools/compare-environment.sh
 
       - name: Validate JSON
         run: |
           python3 -m json.tool config/devkit.config.example.json > /dev/null
           python3 -m json.tool modules/catalog.json > /dev/null
+          python3 -m json.tool versions/catalog.json > /dev/null
+          python3 -m json.tool versions/presets.json > /dev/null
+          python3 -m json.tool tests/fixtures/environment-lock.minimal.json > /dev/null
           for file in stacks/*.json; do
             python3 -m json.tool "$file" > /dev/null
           done
@@ -73,6 +84,9 @@ jobs:
           bash tools/run-config.sh --config config/devkit.config.json --dry-run
           bash tools/install-stack.sh --stack react --dry-run
           bash tools/install-stack.sh --stack fullstack-react-node --dry-run
+          bash tools/check-runtime-versions.sh --config config/devkit.config.json
+          bash tools/import-environment.sh --lock tests/fixtures/environment-lock.minimal.json --dry-run
+          bash tools/compare-environment.sh --lock tests/fixtures/environment-lock.minimal.json
 
       - name: Linux state manifest smoke test
         run: |
@@ -80,17 +94,25 @@ jobs:
           source tools/state.sh
           ensure_state
           state_add_profile "fullstack"
+          state_add_stack "react"
+          state_add_module "react"
+          state_register_runtime_version "node" "major:20" "20.0.0" "constraint"
           state_register_package "example-preexisting" "example-preexisting" "apt" true true
           state_register_package "example-owned" "example-owned" "apt" false true
           state_register_extension "example.extension" false true
           state_register_feature "example-feature" false true
 
+          test "$(jq -r '.schema_version' .super-dev-kit/manifest.json)" = "2"
           test "$(jq -r '.platform' .super-dev-kit/manifest.json)" = "linux"
+          test "$(jq -r '.stacks[] | select(.=="react")' .super-dev-kit/manifest.json)" = "react"
+          test "$(jq -r '.modules[] | select(.=="react")' .super-dev-kit/manifest.json)" = "react"
           test "$(jq -r '.packages[] | select(.id=="example-preexisting") | .installed_by_devkit' .super-dev-kit/manifest.json)" = "false"
           test "$(jq -r '.packages[] | select(.id=="example-owned") | .installed_by_devkit' .super-dev-kit/manifest.json)" = "true"
 
           bash tools/show-state.sh
           bash tools/cleanup.sh
+          bash tools/export-environment.sh --output .super-dev-kit/ci.lock.json
+          python3 -m json.tool .super-dev-kit/ci.lock.json > /dev/null
 
   windows:
     runs-on: windows-latest
@@ -122,7 +144,11 @@ jobs:
             "tools/backup-git.ps1",
             "tools/restore-git.ps1",
             "tools/install-stack.ps1",
-            "tools/stack-wizard.ps1"
+            "tools/stack-wizard.ps1",
+            "tools/check-runtime-versions.ps1",
+            "tools/export-environment.ps1",
+            "tools/import-environment.ps1",
+            "tools/compare-environment.ps1"
           )
 
           $results = foreach ($file in $files) {
@@ -137,6 +163,9 @@ jobs:
         run: |
           Get-Content config/devkit.config.example.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content modules/catalog.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content versions/catalog.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content versions/presets.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content tests/fixtures/environment-lock.minimal.json -Raw | ConvertFrom-Json | Out-Null
           Get-ChildItem stacks -Filter *.json | ForEach-Object {
             Get-Content $_.FullName -Raw | ConvertFrom-Json | Out-Null
           }
@@ -149,6 +178,9 @@ jobs:
           .\tools\run-config.ps1 -ConfigPath .\config\devkit.config.json -DryRun
           .\tools\install-stack.ps1 -Stack react -DryRun
           .\tools\install-stack.ps1 -Stack fullstack-react-node -DryRun
+          .\tools\check-runtime-versions.ps1 -ConfigPath .\config\devkit.config.json
+          .\tools\import-environment.ps1 -LockPath .\tests\fixtures\environment-lock.minimal.json -DryRun
+          .\tools\compare-environment.ps1 -LockPath .\tests\fixtures\environment-lock.minimal.json
 
       - name: Windows state manifest smoke test
         shell: powershell
@@ -157,18 +189,26 @@ jobs:
           . .\tools\state.ps1
           Initialize-DevKitState -Platform "windows"
           Add-DevKitProfile -Profile "FullStack"
+          Add-DevKitStack -Stack "react"
+          Add-DevKitModule -Module "react"
+          Register-DevKitRuntimeVersion -Runtime "node" -Desired "major:20" -Actual "20.0.0" -Policy "constraint"
           Register-DevKitPackage -Id "Example.Preexisting" -Name "Preexisting" -Manager "winget" -Preexisting $true -PresentAfter $true
           Register-DevKitPackage -Id "Example.Owned" -Name "Owned" -Manager "winget" -Preexisting $false -PresentAfter $true
           Register-DevKitExtension -Id "example.extension" -Preexisting $false -PresentAfter $true
           Register-DevKitFeature -Name "ExampleFeature" -Preexisting $false -PresentAfter $true
 
           $state = Get-Content .\.super-dev-kit\manifest.json -Raw | ConvertFrom-Json
+          if ($state.schema_version -ne 2) { throw "schema inválido" }
           if ($state.platform -ne "windows") { throw "platform inválida" }
+          if (@($state.stacks) -notcontains "react") { throw "stack não registrada" }
+          if (@($state.modules) -notcontains "react") { throw "módulo não registrado" }
           if (($state.packages | Where-Object id -eq "Example.Preexisting").installed_by_devkit -ne $false) { throw "preexisting incorreto" }
           if (($state.packages | Where-Object id -eq "Example.Owned").installed_by_devkit -ne $true) { throw "owned incorreto" }
 
           .\tools\show-state.ps1
           .\tools\cleanup.ps1
+          .\tools\export-environment.ps1 -OutputPath .\.super-dev-kit\ci.lock.json
+          Get-Content .\.super-dev-kit\ci.lock.json -Raw | ConvertFrom-Json | Out-Null
 
       - name: Windows CMD smoke test
         shell: cmd
@@ -178,3 +218,6 @@ jobs:
           call tools\show-state.cmd
           call tools\cleanup.cmd
           call tools\install-stack.cmd -Stack react -DryRun
+          call tools\check-runtime-versions.cmd -ConfigPath .\config\devkit.config.json
+          call tools\import-environment.cmd -LockPath .\tests\fixtures\environment-lock.minimal.json -DryRun
+          call tools\compare-environment.cmd -LockPath .\tests\fixtures\environment-lock.minimal.json

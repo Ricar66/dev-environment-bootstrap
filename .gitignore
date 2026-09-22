@@ -28,3 +28,10 @@ temp/
 # Local certificate workspace
 certificates/local/*
 !certificates/local/.gitkeep
+
+# Local Super Dev Kit configuration
+config/devkit.config.json
+
+# Generated inventories / reports
+reports/*
+!reports/.gitkeep

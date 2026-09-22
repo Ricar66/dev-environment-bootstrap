@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 PROFILE="essential"
 DRY_RUN=0
+EXTRA_EXTENSIONS=()
 
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STATE_HELPER="$TOOLS_DIR/state.sh"
@@ -24,6 +25,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --profile)
       PROFILE="${2:-}"
+      shift 2
+      ;;
+    --extension)
+      EXTRA_EXTENSIONS+=("${2:-}")
       shift 2
       ;;
     --dry-run)
@@ -119,7 +124,8 @@ esac
 installed=()
 
 if [[ "$CODE_AVAILABLE" -eq 1 ]]; then
-  mapfile -t installed < <(code --list-extensions 2>/dev/null || true)
+  extensions+=("${EXTRA_EXTENSIONS[@]}")
+mapfile -t installed < <(code --list-extensions 2>/dev/null || true)
 fi
 
 declare -A seen=()

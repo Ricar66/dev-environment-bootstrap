@@ -2,6 +2,31 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.3.0 - 2026-09-22
+
+### Adicionado
+
+- dry-run para o instalador Windows;
+- dry-run para o bootstrap Ubuntu;
+- configuração declarativa em JSON;
+- runners de configuração para Windows e Linux;
+- instalação de extensões do VS Code por perfil;
+- auto-update seguro com `git pull --ff-only`;
+- inventário local do ambiente;
+- cleanup/uninstall controlado em modo preview por padrão;
+- pasta `reports/` ignorada pelo Git;
+- central de operações nos menus Windows e Linux;
+- documentação completa de automação avançada;
+- suporte a Git name/e-mail no runner declarativo Linux;
+- smoke tests em runners descartáveis.
+
+### Segurança
+
+- cleanup exige confirmação explícita antes de remover pacotes;
+- Docker não é removido pelo cleanup sem opção específica;
+- update é bloqueado quando há alterações locais não commitadas;
+- configurações locais e relatórios ficam fora do versionamento.
+
 ## 0.2.0 - 2026-09-21
 
 ### Adicionado

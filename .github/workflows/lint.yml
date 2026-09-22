@@ -1,4 +1,4 @@
-name: Lint scripts
+name: Validate Super Dev Kit
 
 on:
   push:
@@ -11,8 +11,9 @@ permissions:
 jobs:
   shellcheck:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install ShellCheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
@@ -23,6 +24,11 @@ jobs:
           bash -n linux/bootstrap-vm-ubuntu.sh
           bash -n diagnostics/dev-doctor.sh
           bash -n certificates/import-ca-linux.sh
+          bash -n tools/install-vscode-extensions.sh
+          bash -n tools/update-devkit.sh
+          bash -n tools/inventory.sh
+          bash -n tools/cleanup.sh
+          bash -n tools/run-config.sh
 
       - name: Run ShellCheck
         run: |
@@ -30,11 +36,26 @@ jobs:
           shellcheck -S warning linux/bootstrap-vm-ubuntu.sh
           shellcheck -S warning diagnostics/dev-doctor.sh
           shellcheck -S warning certificates/import-ca-linux.sh
+          shellcheck -S warning tools/install-vscode-extensions.sh
+          shellcheck -S warning tools/update-devkit.sh
+          shellcheck -S warning tools/inventory.sh
+          shellcheck -S warning tools/cleanup.sh
+          shellcheck -S warning tools/run-config.sh
+
+      - name: Validate JSON
+        run: python3 -m json.tool config/devkit.config.example.json > /dev/null
+
+      - name: Linux dry-run smoke test
+        run: |
+          bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --dry-run
+          cp config/devkit.config.example.json config/devkit.config.json
+          bash tools/run-config.sh --config config/devkit.config.json --dry-run
 
   powershell:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
@@ -47,7 +68,12 @@ jobs:
             "setup.ps1",
             "windows/setup-windows.ps1",
             "diagnostics/dev-doctor.ps1",
-            "certificates/export-root-ca.ps1"
+            "certificates/export-root-ca.ps1",
+            "tools/install-vscode-extensions.ps1",
+            "tools/update-devkit.ps1",
+            "tools/inventory.ps1",
+            "tools/cleanup.ps1",
+            "tools/run-config.ps1"
           )
 
           $results = foreach ($file in $files) {
@@ -56,3 +82,14 @@ jobs:
 
           $results | Format-Table
           if ($results) { exit 1 }
+
+      - name: Validate JSON
+        shell: pwsh
+        run: Get-Content config/devkit.config.example.json -Raw | ConvertFrom-Json | Out-Null
+
+      - name: Windows dry-run smoke test
+        shell: powershell
+        run: |
+          .\windows\setup-windows.ps1 -Profile FullStack -DryRun
+          Copy-Item .\config\devkit.config.example.json .\config\devkit.config.json
+          .\tools\run-config.ps1 -ConfigPath .\config\devkit.config.json -DryRun

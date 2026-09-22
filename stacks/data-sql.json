@@ -1,0 +1,7 @@
+{
+  "name": "Data / SQL",
+  "slug": "data-sql",
+  "description": "Python, clientes SQL, DBeaver/SQLTools e Docker.",
+  "base_profile": "datasql",
+  "modules": ["python", "sql", "docker"]
+}

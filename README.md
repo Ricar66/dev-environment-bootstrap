@@ -122,6 +122,53 @@ config/devkit.config.json
 
 Ela pode definir perfil, Git, Docker/WSL, extensões e certificado opcional. Veja [Automação avançada](docs/AUTOMATION.md).
 
+## 🧰 Stack Wizard — v0.5
+
+A v0.5 introduz uma camada modular para montar ambientes por **stack**, não apenas por perfil.
+
+CMD:
+
+```cmd
+tools\stack-wizard.cmd
+```
+
+PowerShell:
+
+```powershell
+.\tools\stack-wizard.ps1
+```
+
+Linux:
+
+```bash
+bash tools/stack-wizard.sh
+```
+
+Presets disponíveis incluem React, Node/NestJS, Full Stack React + Node, Python, .NET, Java, PHP, Data/SQL e DevOps.
+
+Também é possível executar diretamente:
+
+```bash
+bash tools/install-stack.sh --stack fullstack-react-node --dry-run
+bash tools/install-stack.sh --stack fullstack-react-node
+```
+
+A stack resolve seus módulos e dependências automaticamente. Veja [Stacks](docs/STACKS.md) e [Arquitetura de módulos](docs/MODULES.md).
+
+## 🩺 Dev Doctor v2
+
+O diagnóstico agora apresenta score, checks por categoria, sugestões de correção e detecção de drift entre o manifesto local e a máquina real.
+
+```text
+Score:    92%
+Checks:   13
+OK:       12
+Avisos:   1
+Falhas:   0
+```
+
+Veja [Dev Doctor v2](docs/DEV-DOCTOR.md).
+
 ## 🪟 Windows
 
 O instalador usa **winget** e pode ser executado tanto pelo CMD quanto pelo PowerShell.
@@ -328,6 +375,13 @@ Veja [examples/README.md](examples/README.md).
 │   └── postgres/
 ├── config/
 │   └── devkit.config.example.json
+├── modules/
+│   └── catalog.json
+├── stacks/
+│   ├── react.json
+│   ├── node-nest.json
+│   ├── fullstack-react-node.json
+│   └── ...
 ├── tools/
 │   ├── run-config.*
 │   ├── install-vscode-extensions.*
@@ -379,6 +433,9 @@ O Super Dev Kit busca ser:
 
 - [Quick Start](docs/QUICKSTART.md)
 - [Automação e estado local](docs/AUTOMATION.md)
+- [Stacks](docs/STACKS.md)
+- [Arquitetura de módulos](docs/MODULES.md)
+- [Dev Doctor v2](docs/DEV-DOCTOR.md)
 - [Perfis](docs/PROFILES.md)
 - [Windows](docs/WINDOWS.md)
 - [Ubuntu / VM](docs/UBUNTU-VM.md)

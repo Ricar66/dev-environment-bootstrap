@@ -25,7 +25,7 @@ echo "Buscando atualizações..."
 git fetch origin
 
 LOCAL="$(git rev-parse HEAD)"
-UPSTREAM="$(git rev-parse @{u} 2>/dev/null || true)"
+UPSTREAM="$(git rev-parse '@{u}' 2>/dev/null || true)"
 
 if [[ -z "$UPSTREAM" ]]; then
   echo "A branch atual não possui upstream configurado."

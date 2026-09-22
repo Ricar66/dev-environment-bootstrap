@@ -3,6 +3,7 @@ set -u
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="$ROOT_DIR/.super-dev-kit/manifest.json"
+CURRENT_USER="${USER:-$(id -un 2>/dev/null || echo root)}"
 
 TOTAL=0
 PASSED=0
@@ -104,7 +105,7 @@ if command -v docker >/dev/null 2>&1; then
     add_check "Docker" "Compose" "WARN" "" "Instale uma implementação compatível do Docker Compose."
   fi
 
-  if id -nG "$USER" | grep -qw docker; then
+  if id -nG "$CURRENT_USER" | grep -qw docker; then
     add_check "Docker" "Grupo docker" "PASS"
   else
     add_check "Docker" "Grupo docker" "WARN" "" "sudo usermod -aG docker \$USER && newgrp docker"

@@ -15,6 +15,7 @@ BACKUP_VSCODE="$ROOT_DIR/tools/backup-vscode.sh"
 RESTORE_VSCODE="$ROOT_DIR/tools/restore-vscode.sh"
 BACKUP_GIT="$ROOT_DIR/tools/backup-git.sh"
 RESTORE_GIT="$ROOT_DIR/tools/restore-git.sh"
+STACK_WIZARD="$ROOT_DIR/tools/stack-wizard.sh"
 CONFIG_EXAMPLE="$ROOT_DIR/config/devkit.config.example.json"
 CONFIG_LOCAL="$ROOT_DIR/config/devkit.config.json"
 VERSION_FILE="$ROOT_DIR/VERSION"
@@ -55,23 +56,25 @@ show_menu() {
                  SUPER DEV KIT v$VERSION
 ====================================================
 
-1.  Instalar por perfil
-2.  Dry-run de um perfil
-3.  Extensões VS Code por perfil
-4.  Executar configuração JSON
-5.  Dry-run da configuração JSON
-6.  Dev Doctor
-7.  Ver manifesto/estado local
-8.  Exportar inventário do ambiente
-9.  Atualizar Super Dev Kit
-10. Preview de cleanup baseado no manifesto
-11. Backup do VS Code
-12. Preview de restore do VS Code
-13. Backup da configuração Git
-14. Preview de restore da configuração Git
-15. Importar certificado CA (opcional)
-16. Criar configuração local a partir do exemplo
-17. Mostrar exemplos Docker
+1.  Stack Wizard
+2.  Dry-run do Stack Wizard
+3.  Instalar por perfil
+4.  Dry-run de um perfil
+5.  Extensões VS Code por perfil
+6.  Executar configuração JSON
+7.  Dry-run da configuração JSON
+8.  Dev Doctor
+9.  Ver manifesto/estado local
+10. Exportar inventário do ambiente
+11. Atualizar Super Dev Kit
+12. Preview de cleanup baseado no manifesto
+13. Backup do VS Code
+14. Preview de restore do VS Code
+15. Backup da configuração Git
+16. Preview de restore da configuração Git
+17. Importar certificado CA (opcional)
+18. Criar configuração local a partir do exemplo
+19. Mostrar exemplos Docker
 0.  Sair
 
 MENU
@@ -83,6 +86,14 @@ while true; do
 
   case "$choice" in
     1)
+      bash "$STACK_WIZARD"
+      pause_menu
+      ;;
+    2)
+      bash "$STACK_WIZARD" --dry-run
+      pause_menu
+      ;;
+    3)
       if profile="$(read_profile)"; then
         sudo bash "$INSTALLER" --profile "$profile"
       else
@@ -90,7 +101,7 @@ while true; do
       fi
       pause_menu
       ;;
-    2)
+    4)
       if profile="$(read_profile)"; then
         bash "$INSTALLER" --profile "$profile" --dry-run
       else
@@ -98,7 +109,7 @@ while true; do
       fi
       pause_menu
       ;;
-    3)
+    5)
       if profile="$(read_profile)"; then
         bash "$EXTENSIONS" --profile "$profile"
       else
@@ -106,16 +117,16 @@ while true; do
       fi
       pause_menu
       ;;
-    4)
+    6)
       if [[ ! -f "$CONFIG_LOCAL" ]]; then
         echo "Configuração local não encontrada."
-        echo "Use a opção 16 primeiro."
+        echo "Use a opção 18 primeiro."
       else
         bash "$CONFIG_RUNNER" --config "$CONFIG_LOCAL"
       fi
       pause_menu
       ;;
-    5)
+    7)
       if [[ ! -f "$CONFIG_LOCAL" ]]; then
         echo "Configuração local não encontrada."
       else
@@ -123,47 +134,47 @@ while true; do
       fi
       pause_menu
       ;;
-    6)
+    8)
       bash "$DOCTOR"
       pause_menu
       ;;
-    7)
+    9)
       bash "$SHOW_STATE"
       pause_menu
       ;;
-    8)
+    10)
       bash "$INVENTORY"
       pause_menu
       ;;
-    9)
+    11)
       bash "$UPDATER"
       pause_menu
       ;;
-    10)
+    12)
       bash "$CLEANUP"
       pause_menu
       ;;
-    11)
+    13)
       bash "$BACKUP_VSCODE"
       pause_menu
       ;;
-    12)
+    14)
       bash "$RESTORE_VSCODE"
       pause_menu
       ;;
-    13)
+    15)
       bash "$BACKUP_GIT"
       pause_menu
       ;;
-    14)
+    16)
       bash "$RESTORE_GIT"
       pause_menu
       ;;
-    15)
+    17)
       sudo bash "$CA_IMPORTER" --auto
       pause_menu
       ;;
-    16)
+    18)
       if [[ -f "$CONFIG_LOCAL" ]]; then
         echo "config/devkit.config.json já existe."
       else
@@ -173,7 +184,7 @@ while true; do
       fi
       pause_menu
       ;;
-    17)
+    19)
       cat "$ROOT_DIR/examples/README.md"
       pause_menu
       ;;

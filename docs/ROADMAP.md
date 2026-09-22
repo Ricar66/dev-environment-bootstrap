@@ -114,11 +114,28 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 
 ## v0.9 — Preparação pública
 
-- [ ] site/documentação
-- [ ] screenshots e GIFs
-- [ ] guias de contribuição
-- [ ] first issues
-- [ ] testes end-to-end
+- [x] README reorganizado para novos usuários
+- [x] página de arquitetura
+- [x] FAQ
+- [x] troubleshooting consolidado
+- [x] matriz de suporte
+- [x] exemplos de saída JSON
+- [x] CONTRIBUTING revisado
+- [x] CODE_OF_CONDUCT
+- [x] templates públicos de issue e pull request
+- [x] guias para stacks, templates e adapters
+- [x] validação de links locais e UTF-8
+- [x] smoke test PowerShell 7
+- [x] onboarding descartável Ubuntu 24.04
+- [x] release notes públicas
+- [x] descrição curta do projeto
+- [x] drafts LinkedIn e Dev.to/Hashnode
+- [x] roteiro de demonstração
+- [x] checklist seguro para mídia
+- [ ] capturas reais da CLI adicionadas ao README
+- [ ] GIF/vídeo curto capturado de execução real
+- [ ] labels customizadas de área aplicadas no GitHub
+- [ ] good first issues publicados
 
 ## v1.0 — Estável
 

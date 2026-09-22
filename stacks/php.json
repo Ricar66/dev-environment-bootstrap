@@ -1,0 +1,7 @@
+{
+  "name": "PHP",
+  "slug": "php",
+  "description": "PHP CLI, Composer e ambiente de desenvolvimento.",
+  "base_profile": "backend",
+  "modules": ["php", "docker"]
+}

@@ -12,6 +12,9 @@ INVENTORY="$ROOT_DIR/tools/inventory.sh"
 CLEANUP="$ROOT_DIR/tools/cleanup.sh"
 CONFIG_EXAMPLE="$ROOT_DIR/config/devkit.config.example.json"
 CONFIG_LOCAL="$ROOT_DIR/config/devkit.config.json"
+VERSION_FILE="$ROOT_DIR/VERSION"
+VERSION="dev"
+[[ -f "$VERSION_FILE" ]] && VERSION="$(tr -d '\r\n' < "$VERSION_FILE")"
 
 read_profile() {
   echo >&2
@@ -38,9 +41,9 @@ read_profile() {
 
 show_menu() {
   clear || true
-  cat <<'MENU'
+  cat <<MENU
 ================================================
-                 SUPER DEV KIT
+              SUPER DEV KIT v$VERSION
 ================================================
 
 1.  Instalar por perfil

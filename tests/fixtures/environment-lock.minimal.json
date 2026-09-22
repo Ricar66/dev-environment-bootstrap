@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-22T00:00:00Z",
+  "devkit_version": "0.6.0-test",
+  "source_platform": "portable",
+  "profiles": ["essential"],
+  "stacks": [],
+  "modules": [],
+  "runtime_versions": {},
+  "packages": {
+    "windows": [],
+    "linux": []
+  },
+  "vscode_extensions": []
+}

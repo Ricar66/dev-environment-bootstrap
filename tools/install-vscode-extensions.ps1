@@ -5,6 +5,7 @@ param(
     [ValidateSet("Essential", "Frontend", "Backend", "FullStack", "DataSQL", "DevOps")]
     [string]$Profile = "Essential",
 
+    [string[]]$ExtraExtension = @(),
     [switch]$DryRun
 )
 
@@ -65,7 +66,8 @@ switch ($Profile) {
     "DevOps" { $extensions += $devOps }
 }
 
-$extensions = $extensions | Sort-Object -Unique
+$extensions += $ExtraExtension
+$extensions = $extensions | Where-Object { $_ } | Sort-Object -Unique
 $installed = @()
 
 if ($codeAvailable) {

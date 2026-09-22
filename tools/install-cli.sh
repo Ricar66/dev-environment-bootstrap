@@ -29,7 +29,7 @@ case ":$PATH:" in
   *)
     echo "Adicione ~/.local/bin ao PATH caso sua distribuição ainda não faça isso."
     echo "Exemplo para Bash:"
-    echo "  echo 'export PATH="\$HOME/.local/bin:\$PATH"' >> ~/.bashrc"
+    printf '%s\n' '  echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc'
     echo "  source ~/.bashrc"
     ;;
 esac

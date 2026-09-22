@@ -10,6 +10,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$stateHelper = Join-Path $PSScriptRoot "state.ps1"
+if (Test-Path $stateHelper) {
+    . $stateHelper
+}
+
 $codeAvailable = [bool](Get-Command code -ErrorAction SilentlyContinue)
 
 if (-not $DryRun -and -not $codeAvailable) {
@@ -71,8 +76,15 @@ Write-Host "Perfil: $Profile" -ForegroundColor Cyan
 Write-Host "Extensões planejadas: $($extensions.Count)"
 
 foreach ($extension in $extensions) {
-    if ($installed -contains $extension) {
+    $preexisting = $installed -contains $extension
+
+    if ($preexisting) {
         Write-Host "[OK] $extension já instalada." -ForegroundColor Green
+
+        if (-not $DryRun -and (Get-Command Register-DevKitExtension -ErrorAction SilentlyContinue)) {
+            Register-DevKitExtension -Id $extension -Preexisting $true -PresentAfter $true
+        }
+
         continue
     }
 
@@ -83,6 +95,16 @@ foreach ($extension in $extensions) {
 
     Write-Host "[INSTALANDO] $extension"
     code --install-extension $extension --force
+
+    $presentAfter = @(code --list-extensions 2>$null) -contains $extension
+
+    if (Get-Command Register-DevKitExtension -ErrorAction SilentlyContinue) {
+        Register-DevKitExtension -Id $extension -Preexisting $false -PresentAfter $presentAfter
+    }
+
+    if (Get-Command Write-DevKitEvent -ErrorAction SilentlyContinue) {
+        Write-DevKitEvent -Event "vscode_extension_installed" -Data @{ extension = $extension }
+    }
 }
 
 Write-Host ""

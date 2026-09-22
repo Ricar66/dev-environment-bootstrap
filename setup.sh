@@ -10,6 +10,11 @@ CONFIG_RUNNER="$ROOT_DIR/tools/run-config.sh"
 UPDATER="$ROOT_DIR/tools/update-devkit.sh"
 INVENTORY="$ROOT_DIR/tools/inventory.sh"
 CLEANUP="$ROOT_DIR/tools/cleanup.sh"
+SHOW_STATE="$ROOT_DIR/tools/show-state.sh"
+BACKUP_VSCODE="$ROOT_DIR/tools/backup-vscode.sh"
+RESTORE_VSCODE="$ROOT_DIR/tools/restore-vscode.sh"
+BACKUP_GIT="$ROOT_DIR/tools/backup-git.sh"
+RESTORE_GIT="$ROOT_DIR/tools/restore-git.sh"
 CONFIG_EXAMPLE="$ROOT_DIR/config/devkit.config.example.json"
 CONFIG_LOCAL="$ROOT_DIR/config/devkit.config.json"
 VERSION_FILE="$ROOT_DIR/VERSION"
@@ -39,12 +44,16 @@ read_profile() {
   esac
 }
 
+pause_menu() {
+  read -r -p "Pressione Enter para voltar..." _
+}
+
 show_menu() {
   clear || true
   cat <<MENU
-================================================
-              SUPER DEV KIT v$VERSION
-================================================
+====================================================
+                 SUPER DEV KIT v$VERSION
+====================================================
 
 1.  Instalar por perfil
 2.  Dry-run de um perfil
@@ -52,12 +61,17 @@ show_menu() {
 4.  Executar configuração JSON
 5.  Dry-run da configuração JSON
 6.  Dev Doctor
-7.  Exportar inventário do ambiente
-8.  Atualizar Super Dev Kit
-9.  Preview de cleanup/uninstall
-10. Importar certificado CA (opcional)
-11. Criar configuração local a partir do exemplo
-12. Mostrar exemplos Docker
+7.  Ver manifesto/estado local
+8.  Exportar inventário do ambiente
+9.  Atualizar Super Dev Kit
+10. Preview de cleanup baseado no manifesto
+11. Backup do VS Code
+12. Preview de restore do VS Code
+13. Backup da configuração Git
+14. Preview de restore da configuração Git
+15. Importar certificado CA (opcional)
+16. Criar configuração local a partir do exemplo
+17. Mostrar exemplos Docker
 0.  Sair
 
 MENU
@@ -73,8 +87,8 @@ while true; do
         sudo bash "$INSTALLER" --profile "$profile"
       else
         echo "Perfil inválido."
-        sleep 1
       fi
+      pause_menu
       ;;
     2)
       if profile="$(read_profile)"; then
@@ -82,7 +96,7 @@ while true; do
       else
         echo "Perfil inválido."
       fi
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
     3)
       if profile="$(read_profile)"; then
@@ -90,16 +104,16 @@ while true; do
       else
         echo "Perfil inválido."
       fi
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
     4)
       if [[ ! -f "$CONFIG_LOCAL" ]]; then
         echo "Configuração local não encontrada."
-        echo "Use a opção 11 primeiro."
+        echo "Use a opção 16 primeiro."
       else
         bash "$CONFIG_RUNNER" --config "$CONFIG_LOCAL"
       fi
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
     5)
       if [[ ! -f "$CONFIG_LOCAL" ]]; then
@@ -107,37 +121,49 @@ while true; do
       else
         bash "$CONFIG_RUNNER" --config "$CONFIG_LOCAL" --dry-run
       fi
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
     6)
       bash "$DOCTOR"
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
     7)
-      bash "$INVENTORY"
-      read -r -p "Pressione Enter para voltar..." _
+      bash "$SHOW_STATE"
+      pause_menu
       ;;
     8)
-      bash "$UPDATER"
-      read -r -p "Pressione Enter para voltar..." _
+      bash "$INVENTORY"
+      pause_menu
       ;;
     9)
-      if profile="$(read_profile)"; then
-        if [[ "$profile" == "essential" ]]; then
-          echo "Cleanup não é executado para o perfil Essential."
-        else
-          bash "$CLEANUP" --profile "$profile"
-        fi
-      else
-        echo "Perfil inválido."
-      fi
-      read -r -p "Pressione Enter para voltar..." _
+      bash "$UPDATER"
+      pause_menu
       ;;
     10)
-      sudo bash "$CA_IMPORTER" --auto
-      read -r -p "Pressione Enter para voltar..." _
+      bash "$CLEANUP"
+      pause_menu
       ;;
     11)
+      bash "$BACKUP_VSCODE"
+      pause_menu
+      ;;
+    12)
+      bash "$RESTORE_VSCODE"
+      pause_menu
+      ;;
+    13)
+      bash "$BACKUP_GIT"
+      pause_menu
+      ;;
+    14)
+      bash "$RESTORE_GIT"
+      pause_menu
+      ;;
+    15)
+      sudo bash "$CA_IMPORTER" --auto
+      pause_menu
+      ;;
+    16)
       if [[ -f "$CONFIG_LOCAL" ]]; then
         echo "config/devkit.config.json já existe."
       else
@@ -145,11 +171,11 @@ while true; do
         echo "[OK] Configuração criada:"
         echo "     $CONFIG_LOCAL"
       fi
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
-    12)
+    17)
       cat "$ROOT_DIR/examples/README.md"
-      read -r -p "Pressione Enter para voltar..." _
+      pause_menu
       ;;
     0)
       exit 0

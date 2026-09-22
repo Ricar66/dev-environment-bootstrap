@@ -199,6 +199,13 @@ if [[ "$INSTALL_EXTENSIONS" == "true" ]]; then
   bash "$ROOT_DIR/tools/install-vscode-extensions.sh" "${ext_args[@]}"
 fi
 
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo
+  echo "[DRY-RUN] Restrições de runtime serão verificadas após a instalação real."
+else
+  bash "$ROOT_DIR/tools/check-runtime-versions.sh"     --config "$CONFIG_PATH"     --update-manifest     --no-fail
+fi
+
 if [[ -n "$OLD_HTTP_PROXY" ]]; then export HTTP_PROXY="$OLD_HTTP_PROXY"; else unset HTTP_PROXY || true; fi
 if [[ -n "$OLD_HTTPS_PROXY" ]]; then export HTTPS_PROXY="$OLD_HTTPS_PROXY"; else unset HTTPS_PROXY || true; fi
 if [[ -n "$OLD_NO_PROXY" ]]; then export NO_PROXY="$OLD_NO_PROXY"; else unset NO_PROXY || true; fi

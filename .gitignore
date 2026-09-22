@@ -1,0 +1,26 @@
+# Logs
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Corporate/private certificates
+*.cer
+*.crt
+*.der
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/

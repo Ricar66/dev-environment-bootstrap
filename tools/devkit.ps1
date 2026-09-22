@@ -10,6 +10,7 @@ $exitUsage = 64
 $exitUnavailable = 69
 $exitInternal = 70
 $script:JsonMode = $false
+$script:DelegatedExitCode = 0
 
 function Get-DevKitVersion {
     if (Test-Path $versionFile) {
@@ -194,7 +195,8 @@ function Invoke-Tool {
             Write-Host "Ferramenta nao encontrada: $Path" -ForegroundColor Red
         }
 
-        return $exitUnavailable
+        $script:DelegatedExitCode = $exitUnavailable
+        return
     }
 
     try {
@@ -210,11 +212,13 @@ function Invoke-Tool {
                 arguments    = @($ToolArgs)
             } -Output $captured
 
-            return $code
+            $script:DelegatedExitCode = $code
+            return
         }
 
         & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $Path @ToolArgs
-        return $LASTEXITCODE
+        $script:DelegatedExitCode = $LASTEXITCODE
+        return
     }
     catch {
         if ($Json) {
@@ -226,7 +230,8 @@ function Invoke-Tool {
             Write-Host "Erro interno da CLI: $($_.Exception.Message)" -ForegroundColor Red
         }
 
-        return $exitInternal
+        $script:DelegatedExitCode = $exitInternal
+        return
     }
 }
 
@@ -611,5 +616,5 @@ switch ($command) {
     }
 }
 
-$exitCode = Invoke-Tool -CommandName $command -Path $tool -ToolArgs $toolArgs -Json:$json
-exit $exitCode
+Invoke-Tool -CommandName $command -Path $tool -ToolArgs $toolArgs -Json:$json
+exit $script:DelegatedExitCode

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "source": "real_cli_execution",
+  "sanitized": true,
+  "generated_at": "2026-09-22T21:37:37.638414Z",
+  "git_sha": "f79be90925ead3cecc8f72bb1862db9a91ddbd8f",
+  "captures": [
+    {
+      "title": "CLI Help",
+      "command": [
+        "bash",
+        "devkit.sh",
+        "help"
+      ],
+      "filename": "cli-help.png",
+      "exit_code": 0
+    },
+    {
+      "title": "Full Stack Setup — Dry Run",
+      "command": [
+        "bash",
+        "devkit.sh",
+        "setup",
+        "fullstack",
+        "--dry-run"
+      ],
+      "filename": "setup-fullstack-dry-run.png",
+      "exit_code": 0
+    },
+    {
+      "title": "Dev Doctor",
+      "command": [
+        "bash",
+        "devkit.sh",
+        "doctor"
+      ],
+      "filename": "dev-doctor.png",
+      "exit_code": 0
+    },
+    {
+      "title": "Project Generator — Dry Run",
+      "command": [
+        "bash",
+        "devkit.sh",
+        "project",
+        "react-vite",
+        "demo",
+        "--output",
+        "/tmp/super-dev-kit-media",
+        "--dry-run"
+      ],
+      "filename": "project-react-vite-dry-run.png",
+      "exit_code": 0
+    }
+  ]
+}

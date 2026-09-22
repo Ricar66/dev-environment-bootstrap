@@ -351,6 +351,11 @@ jobs:
           & $shim version
           & $shim cli status
           & $shim cli uninstall
+
+          for ($i = 0; $i -lt 20 -and (Test-Path $shim); $i++) {
+            Start-Sleep -Milliseconds 250
+          }
+
           if (Test-Path $shim) { throw "Shim global não foi removido pelo próprio comando global" }
 
       - name: Windows project templates smoke test

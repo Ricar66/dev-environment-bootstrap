@@ -5,6 +5,7 @@ CONFIG_PATH="config/devkit.config.json"
 PRESET=""
 LOCK_PATH=""
 UPDATE_MANIFEST=0
+NO_FAIL=0
 
 usage() {
   cat <<'EOF'
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --update-manifest)
       UPDATE_MANIFEST=1
+      shift
+      ;;
+    --no-fail)
+      NO_FAIL=1
       shift
       ;;
     -h|--help)
@@ -215,4 +220,9 @@ if [[ "$failures" -eq 0 ]]; then
 fi
 
 echo "$failures runtime(s) fora da política desejada."
+
+if [[ "$NO_FAIL" -eq 1 ]]; then
+  exit 0
+fi
+
 exit 2

@@ -51,6 +51,8 @@ O shim é criado em:
 %LOCALAPPDATA%\SuperDevKit\bin\devkit.cmd
 ~~~
 
+O shim aponta para **este clone** do repositório. Se o diretório do clone for movido ou removido, execute novamente `devkit cli install` a partir da nova localização.
+
 O instalador adiciona esse diretório ao PATH do usuário quando necessário. Abra um novo terminal depois da primeira instalação.
 
 ### Linux
@@ -64,6 +66,8 @@ O shim é criado em:
 ~~~text
 ~/.local/bin/devkit
 ~~~
+
+Assim como no Windows, o shim aponta para o clone atual. Se você mover o repositório, reinstale o shim.
 
 Se ~/.local/bin ainda não estiver no PATH, o instalador mostra o comando necessário.
 
@@ -239,6 +243,27 @@ Assim a v0.8 adiciona automação sem obrigar a reescrever de uma vez toda a bas
 | 70 | erro interno da CLI |
 
 Os códigos existentes dos scripts delegados são preservados sempre que possível.
+
+## Migração dos comandos antigos
+
+A v0.8 não exige migração imediata. Os comandos antigos continuam válidos, mas existe uma equivalência direta:
+
+| Antes | CLI v0.8 |
+| --- | --- |
+| `setup.cmd` / `.\setup.ps1` / `bash setup.sh` | `devkit setup` |
+| `diagnostics/dev-doctor.*` | `devkit doctor` |
+| `tools/install-stack.*` | `devkit stack <nome>` |
+| `tools/create-project.*` | `devkit project <template> <nome>` |
+| `tools/runtime-manager.*` | `devkit runtime <runtime> <versao>` |
+| `tools/show-state.*` | `devkit state` |
+| `tools/export-environment.*` | `devkit export` |
+| `tools/import-environment.*` | `devkit import` |
+| `tools/compare-environment.*` | `devkit compare` |
+| `tools/backup-vscode.*` | `devkit backup vscode` |
+| `tools/backup-git.*` | `devkit backup git` |
+| `tools/inventory.*` | `devkit inventory` |
+| `tools/cleanup.*` | `devkit cleanup` |
+| `tools/update-devkit.*` | `devkit update` |
 
 ## Compatibilidade com comandos antigos
 

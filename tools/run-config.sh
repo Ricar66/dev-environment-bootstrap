@@ -88,6 +88,8 @@ PROFILE="${PROFILE:-essential}"
 INSTALL_EXTENSIONS="$(read_json install_vscode_extensions)"
 CA_AUTO="$(read_json certificate.auto)"
 CA_PATH="$(read_json certificate.path)"
+GIT_NAME="$(read_json git.name)"
+GIT_EMAIL="$(read_json git.email)"
 
 PROFILE="${PROFILE,,}"
 
@@ -118,7 +120,23 @@ echo "Configuração: $CONFIG_PATH"
 echo "Perfil: $PROFILE"
 echo
 
-sudo bash "$ROOT_DIR/linux/bootstrap-vm-ubuntu.sh" "${installer_args[@]}"
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  bash "$ROOT_DIR/linux/bootstrap-vm-ubuntu.sh" "${installer_args[@]}"
+else
+  sudo bash "$ROOT_DIR/linux/bootstrap-vm-ubuntu.sh" "${installer_args[@]}"
+fi
+
+if [[ -n "$GIT_NAME" || -n "$GIT_EMAIL" ]]; then
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    [[ -n "$GIT_NAME" ]] && echo "[DRY-RUN] git config --global user.name \"$GIT_NAME\""
+    [[ -n "$GIT_EMAIL" ]] && echo "[DRY-RUN] git config --global user.email \"$GIT_EMAIL\""
+    echo "[DRY-RUN] git config --global init.defaultBranch main"
+  else
+    [[ -n "$GIT_NAME" ]] && git config --global user.name "$GIT_NAME"
+    [[ -n "$GIT_EMAIL" ]] && git config --global user.email "$GIT_EMAIL"
+    git config --global init.defaultBranch main
+  fi
+fi
 
 if [[ "$INSTALL_EXTENSIONS" == "true" ]]; then
   ext_args=(--profile "$PROFILE")

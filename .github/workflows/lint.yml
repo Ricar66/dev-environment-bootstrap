@@ -1,0 +1,52 @@
+name: Lint scripts
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Check Bash syntax
+        run: |
+          bash -n setup.sh
+          bash -n linux/bootstrap-vm-ubuntu.sh
+          bash -n diagnostics/dev-doctor.sh
+
+      - name: Run ShellCheck
+        run: shellcheck setup.sh linux/bootstrap-vm-ubuntu.sh diagnostics/dev-doctor.sh
+
+  powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: Analyze PowerShell
+        shell: pwsh
+        run: |
+          $files = @(
+            "setup.ps1",
+            "windows/setup-windows.ps1",
+            "diagnostics/dev-doctor.ps1"
+          )
+
+          $results = foreach ($file in $files) {
+            Invoke-ScriptAnalyzer -Path $file -Severity Warning,Error
+          }
+
+          $results | Format-Table
+          if ($results) { exit 1 }

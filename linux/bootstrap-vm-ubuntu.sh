@@ -19,6 +19,7 @@ PROFILE="essential"
 CA_FILE=""
 AUTO_CA=0
 DRY_RUN=0
+YES=0
 
 usage() {
   cat <<'EOF'
@@ -30,6 +31,7 @@ Opções:
   --ca ARQUIVO       instala um certificado CA .cer/.crt
   --auto-ca          procura certificados em Downloads, /media e /mnt
   --dry-run          mostra o plano sem alterar a máquina
+  --yes               modo não interativo para confirmações seguras
   -h, --help         mostra esta ajuda
 EOF
 }
@@ -50,6 +52,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN=1
+      shift
+      ;;
+    --yes|--non-interactive)
+      YES=1
       shift
       ;;
     -h|--help)
@@ -209,7 +215,11 @@ update-ca-certificates
 
 if [[ "$AUTO_CA" -eq 1 ]]; then
   if [[ -f "$CA_HELPER" ]]; then
-    bash "$CA_HELPER" --auto
+    if [[ "$YES" -eq 1 ]]; then
+      bash "$CA_HELPER" --auto --yes
+    else
+      bash "$CA_HELPER" --auto
+    fi
   else
     echo "Importador automático não encontrado: $CA_HELPER"
   fi

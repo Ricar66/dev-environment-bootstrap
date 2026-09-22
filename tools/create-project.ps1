@@ -68,7 +68,7 @@ function Show-Templates {
     Write-Host "================================================" -ForegroundColor Cyan
     Write-Host ""
 
-    foreach ($property in $catalog.templates.PSObject.Properties | Sort-Object Name) {
+    foreach ($property in ($catalog.templates.PSObject.Properties | Sort-Object Name)) {
         $item = $property.Value
         Write-Host "$($property.Name) — $($item.name)"
         Write-Host "  $($item.description)"

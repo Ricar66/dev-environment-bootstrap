@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 CONFIG_PATH="config/devkit.config.json"
 PRESET=""
+LOCK_PATH=""
 UPDATE_MANIFEST=0
 
 usage() {
@@ -22,6 +23,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --preset)
       PRESET="${2:-}"
+      shift 2
+      ;;
+    --lock)
+      LOCK_PATH="${2:-}"
       shift 2
       ;;
     --update-manifest)
@@ -56,23 +61,37 @@ if [[ "$CONFIG_PATH" != /* ]]; then
   CONFIG_PATH="$ROOT_DIR/$CONFIG_PATH"
 fi
 
-if [[ -n "$PRESET" ]]; then
+if [[ -n "$LOCK_PATH" && "$LOCK_PATH" != /* ]]; then
+  LOCK_PATH="$ROOT_DIR/$LOCK_PATH"
+fi
+
+if [[ -n "$LOCK_PATH" ]]; then
+  SOURCE_MODE="lock"
+  [[ -f "$LOCK_PATH" ]] || { echo "Lock file não encontrado: $LOCK_PATH"; exit 1; }
+elif [[ -n "$PRESET" ]]; then
   SOURCE_MODE="preset"
 else
   SOURCE_MODE="config"
   [[ -f "$CONFIG_PATH" ]] || { echo "Configuração não encontrada: $CONFIG_PATH"; exit 1; }
 fi
 
-PLAN="$(python3 - "$CATALOG" "$PRESETS" "$CONFIG_PATH" "$SOURCE_MODE" "$PRESET" <<'PY'
+PLAN="$(python3 - "$CATALOG" "$PRESETS" "$CONFIG_PATH" "$SOURCE_MODE" "$PRESET" "$LOCK_PATH" <<'PY'
 import json
 import sys
 
-catalog_path, presets_path, config_path, mode, preset_name = sys.argv[1:6]
+catalog_path, presets_path, config_path, mode, preset_name, lock_path = sys.argv[1:7]
 
 with open(catalog_path, encoding="utf-8") as f:
     catalog = json.load(f)["runtimes"]
 
-if mode == "preset":
+if mode == "lock":
+    with open(lock_path, encoding="utf-8") as f:
+        lock = json.load(f)
+    desired = {
+        name: value.get("constraint", "")
+        for name, value in lock.get("runtime_versions", {}).items()
+    }
+elif mode == "preset":
     with open(presets_path, encoding="utf-8") as f:
         presets = json.load(f)["presets"]
     if preset_name not in presets:

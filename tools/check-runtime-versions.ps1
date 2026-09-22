@@ -5,7 +5,8 @@ param(
     [string]$ConfigPath = ".\config\devkit.config.json",
     [string]$Preset,
     [string]$LockPath,
-    [switch]$UpdateManifest
+    [switch]$UpdateManifest,
+    [switch]$NoFail
 )
 
 $ErrorActionPreference = "Stop"
@@ -199,4 +200,9 @@ if ($failures -eq 0) {
 }
 
 Write-Host "$failures runtime(s) fora da política desejada." -ForegroundColor Red
+
+if ($NoFail) {
+    exit 0
+}
+
 exit 2

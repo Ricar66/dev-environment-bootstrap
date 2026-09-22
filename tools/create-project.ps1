@@ -38,6 +38,30 @@ function ConvertTo-ProjectSlug {
     return $slug
 }
 
+function Invoke-ExternalWithRetry {
+    param(
+        [Parameter(Mandatory)][string]$Command,
+        [string[]]$Arguments = @(),
+        [int]$Attempts = 3
+    )
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        Write-Host "[EXEC $attempt/$Attempts] $Command $($Arguments -join ' ')" -ForegroundColor Cyan
+        & $Command @Arguments
+
+        if ($LASTEXITCODE -eq 0) {
+            return
+        }
+
+        if ($attempt -lt $Attempts) {
+            Write-Host "Tentativa falhou; tentando novamente em 3 segundos..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 3
+        }
+    }
+
+    throw "Falha após $Attempts tentativas: $Command"
+}
+
 function Show-Templates {
     Write-Host "================================================" -ForegroundColor Cyan
     Write-Host "         SUPER DEV KIT - PROJECT TEMPLATES" -ForegroundColor Cyan
@@ -186,35 +210,26 @@ if ($InstallDependencies) {
         switch ($Template) {
             "react-vite" {
                 if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw "npm não encontrado." }
-                npm install
+                Invoke-ExternalWithRetry -Command "npm" -Arguments @("install")
             }
             "node-nest" {
                 if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw "npm não encontrado." }
-                npm install
+                Invoke-ExternalWithRetry -Command "npm" -Arguments @("install")
             }
             "dotnet-webapi" {
                 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { throw "dotnet não encontrado." }
-                dotnet restore
+                Invoke-ExternalWithRetry -Command "dotnet" -Arguments @("restore")
             }
             "python-api" {
                 $python = Get-Command python -ErrorAction SilentlyContinue
                 if (-not $python) { $python = Get-Command py -ErrorAction SilentlyContinue }
                 if (-not $python) { throw "Python não encontrado." }
 
-                if ($python.Name -eq "py.exe" -or $python.Name -eq "py") {
-                    py -m pip install -r requirements.txt
-                }
-                else {
-                    python -m pip install -r requirements.txt
-                }
+                Invoke-ExternalWithRetry -Command $python.Source -Arguments @("-m", "pip", "install", "-r", "requirements.txt")
             }
             "docker-compose" {
                 Write-Host "Nenhuma dependência local para instalar."
             }
-        }
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Falha ao instalar dependências."
         }
     }
     finally {

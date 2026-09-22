@@ -41,6 +41,9 @@ jobs:
           bash -n tools/export-environment.sh
           bash -n tools/import-environment.sh
           bash -n tools/compare-environment.sh
+          bash -n tools/runtime-manager.sh
+          bash -n tools/create-project.sh
+          bash -n tools/project-wizard.sh
 
       - name: Run ShellCheck
         run: |
@@ -65,6 +68,9 @@ jobs:
           shellcheck -S warning tools/export-environment.sh
           shellcheck -S warning tools/import-environment.sh
           shellcheck -S warning tools/compare-environment.sh
+          shellcheck -S warning tools/runtime-manager.sh
+          shellcheck -S warning tools/create-project.sh
+          shellcheck -S warning tools/project-wizard.sh
 
       - name: Validate JSON
         run: |
@@ -72,6 +78,13 @@ jobs:
           python3 -m json.tool modules/catalog.json > /dev/null
           python3 -m json.tool versions/catalog.json > /dev/null
           python3 -m json.tool versions/presets.json > /dev/null
+          python3 -m json.tool versions/managers.json > /dev/null
+          python3 -m json.tool templates/catalog.json > /dev/null
+          python3 -m json.tool templates/react-vite/package.json > /dev/null
+          python3 -m json.tool templates/node-nest/package.json > /dev/null
+          python3 -m json.tool templates/node-nest/tsconfig.json > /dev/null
+          python3 -m json.tool templates/node-nest/nest-cli.json > /dev/null
+          python3 -m json.tool templates/dotnet-webapi/appsettings.json > /dev/null
           python3 -m json.tool tests/fixtures/environment-lock.minimal.json > /dev/null
           for file in stacks/*.json; do
             python3 -m json.tool "$file" > /dev/null
@@ -87,6 +100,48 @@ jobs:
           bash tools/check-runtime-versions.sh --config config/devkit.config.json
           bash tools/import-environment.sh --lock tests/fixtures/environment-lock.minimal.json --dry-run
           bash tools/compare-environment.sh --lock tests/fixtures/environment-lock.minimal.json
+
+          bash tools/runtime-manager.sh --runtime node --version 22 --manager fnm --dry-run
+          bash tools/runtime-manager.sh --runtime python --version 3.13.1 --manager pyenv --dry-run
+          bash tools/runtime-manager.sh --runtime dotnet --version 10.0.100 --manager dotnet-install --dry-run
+          bash tools/runtime-manager.sh --runtime java --version 21-tem --manager sdkman --dry-run
+          bash tools/runtime-manager.sh --runtime php --version 8.4.1 --manager phpenv --dry-run
+
+      - name: Linux project templates smoke test
+        run: |
+          rm -rf .super-dev-kit/ci-projects
+
+          bash tools/create-project.sh --template react-vite --name "CI React" --output .super-dev-kit/ci-projects --with-devcontainer
+          bash tools/create-project.sh --template node-nest --name "CI Nest" --output .super-dev-kit/ci-projects
+          bash tools/create-project.sh --template dotnet-webapi --name "CI Dotnet" --output .super-dev-kit/ci-projects
+          bash tools/create-project.sh --template python-api --name "CI Python" --output .super-dev-kit/ci-projects
+          bash tools/create-project.sh --template docker-compose --name "CI Docker" --output .super-dev-kit/ci-projects
+
+          test -f .super-dev-kit/ci-projects/ci-react/package.json
+          test -f .super-dev-kit/ci-projects/ci-react/.devcontainer/devcontainer.json
+          test -f .super-dev-kit/ci-projects/ci-nest/src/main.ts
+          test -f .super-dev-kit/ci-projects/ci-dotnet/ci-dotnet.csproj
+          test -f .super-dev-kit/ci-projects/ci-python/app/main.py
+          test -f .super-dev-kit/ci-projects/ci-docker/compose.yaml
+
+          python3 -m json.tool .super-dev-kit/ci-projects/ci-react/package.json > /dev/null
+          python3 -m json.tool .super-dev-kit/ci-projects/ci-react/.devcontainer/devcontainer.json > /dev/null
+          python3 -m json.tool .super-dev-kit/ci-projects/ci-nest/package.json > /dev/null
+          python3 -m py_compile .super-dev-kit/ci-projects/ci-python/app/main.py
+
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+
+          root = pathlib.Path(".super-dev-kit/ci-projects")
+          for path in root.rglob("*"):
+              if path.is_file():
+                  text = path.read_text(encoding="utf-8")
+                  if "{{PROJECT_" in text:
+                      raise SystemExit(f"placeholder não renderizado: {path}")
+
+          ET.parse(root / "ci-dotnet" / "ci-dotnet.csproj")
+          PY
 
       - name: Linux state manifest smoke test
         run: |
@@ -148,7 +203,10 @@ jobs:
             "tools/check-runtime-versions.ps1",
             "tools/export-environment.ps1",
             "tools/import-environment.ps1",
-            "tools/compare-environment.ps1"
+            "tools/compare-environment.ps1",
+            "tools/runtime-manager.ps1",
+            "tools/create-project.ps1",
+            "tools/project-wizard.ps1"
           )
 
           $results = foreach ($file in $files) {
@@ -165,6 +223,13 @@ jobs:
           Get-Content modules/catalog.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content versions/catalog.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content versions/presets.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content versions/managers.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content templates/catalog.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content templates/react-vite/package.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content templates/node-nest/package.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content templates/node-nest/tsconfig.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content templates/node-nest/nest-cli.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content templates/dotnet-webapi/appsettings.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content tests/fixtures/environment-lock.minimal.json -Raw | ConvertFrom-Json | Out-Null
           Get-ChildItem stacks -Filter *.json | ForEach-Object {
             Get-Content $_.FullName -Raw | ConvertFrom-Json | Out-Null
@@ -181,6 +246,47 @@ jobs:
           .\tools\check-runtime-versions.ps1 -ConfigPath .\config\devkit.config.json
           .\tools\import-environment.ps1 -LockPath .\tests\fixtures\environment-lock.minimal.json -DryRun
           .\tools\compare-environment.ps1 -LockPath .\tests\fixtures\environment-lock.minimal.json
+
+          .\tools\runtime-manager.ps1 -Runtime node -Version 22 -Manager fnm -DryRun
+          .\tools\runtime-manager.ps1 -Runtime python -Version 3.13.1 -Manager pyenv -DryRun
+          .\tools\runtime-manager.ps1 -Runtime dotnet -Version 10.0.100 -Manager dotnet-install -DryRun
+          .\tools\runtime-manager.ps1 -Runtime java -Version 21-tem -Manager sdkman -DryRun
+          .\tools\runtime-manager.ps1 -Runtime php -Version 8.4.1 -Manager phpenv -DryRun
+
+      - name: Windows project templates smoke test
+        shell: powershell
+        run: |
+          Remove-Item .\.super-dev-kit\ci-projects -Recurse -Force -ErrorAction SilentlyContinue
+
+          .\tools\create-project.ps1 -Template react-vite -Name "CI React" -OutputPath .\.super-dev-kit\ci-projects -WithDevContainer
+          .\tools\create-project.ps1 -Template node-nest -Name "CI Nest" -OutputPath .\.super-dev-kit\ci-projects
+          .\tools\create-project.ps1 -Template dotnet-webapi -Name "CI Dotnet" -OutputPath .\.super-dev-kit\ci-projects
+          .\tools\create-project.ps1 -Template python-api -Name "CI Python" -OutputPath .\.super-dev-kit\ci-projects
+          .\tools\create-project.ps1 -Template docker-compose -Name "CI Docker" -OutputPath .\.super-dev-kit\ci-projects
+
+          $required = @(
+            ".\.super-dev-kit\ci-projects\ci-react\package.json",
+            ".\.super-dev-kit\ci-projects\ci-react\.devcontainer\devcontainer.json",
+            ".\.super-dev-kit\ci-projects\ci-nest\src\main.ts",
+            ".\.super-dev-kit\ci-projects\ci-dotnet\ci-dotnet.csproj",
+            ".\.super-dev-kit\ci-projects\ci-python\app\main.py",
+            ".\.super-dev-kit\ci-projects\ci-docker\compose.yaml"
+          )
+
+          foreach ($file in $required) {
+            if (-not (Test-Path $file)) { throw "arquivo gerado ausente: $file" }
+          }
+
+          Get-Content .\.super-dev-kit\ci-projects\ci-react\package.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content .\.super-dev-kit\ci-projects\ci-react\.devcontainer\devcontainer.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content .\.super-dev-kit\ci-projects\ci-nest\package.json -Raw | ConvertFrom-Json | Out-Null
+
+          $remaining = Get-ChildItem .\.super-dev-kit\ci-projects -File -Recurse -Force |
+            Select-String -SimpleMatch "{{PROJECT_"
+
+          if ($remaining) {
+            throw "Existem placeholders não renderizados."
+          }
 
       - name: Windows state manifest smoke test
         shell: powershell
@@ -221,3 +327,5 @@ jobs:
           call tools\check-runtime-versions.cmd -ConfigPath .\config\devkit.config.json
           call tools\import-environment.cmd -LockPath .\tests\fixtures\environment-lock.minimal.json -DryRun
           call tools\compare-environment.cmd -LockPath .\tests\fixtures\environment-lock.minimal.json
+          call tools\runtime-manager.cmd -Runtime node -Version 22 -Manager fnm -DryRun
+          call tools\create-project.cmd -Template react-vite -Name cmd-react -OutputPath .\.super-dev-kit\cmd-projects -DryRun

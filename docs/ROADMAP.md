@@ -139,10 +139,25 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 
 ## v1.0 — Estável
 
-- [ ] releases versionadas e assinadas
-- [ ] matriz de compatibilidade
-- [ ] política de breaking changes
-- [ ] documentação pública completa
+- [x] versão 1.0.0 preparada
+- [x] matriz oficial de compatibilidade
+- [x] Semantic Versioning
+- [x] política de breaking changes
+- [x] contratos públicos da CLI documentados
+- [x] códigos de saída v1 documentados
+- [x] schema JSON v1 documentado
+- [x] manifesto schema v2 documentado
+- [x] processo de release documentado
+- [x] threat model
+- [x] SECURITY revisado
+- [x] README final
+- [x] Manual do Usuário
+- [x] Quick Start v1
+- [x] release notes v1.0.0
+- [ ] tag Git v1.0.0
+- [ ] GitHub Release v1.0.0
+- [ ] screenshots reais da CLI
+- [ ] demo curta real
 
 ## Futuro
 

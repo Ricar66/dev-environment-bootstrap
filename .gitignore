@@ -24,3 +24,7 @@ Thumbs.db
 # Temporary
 tmp/
 temp/
+
+# Local certificate workspace
+certificates/local/*
+!certificates/local/.gitkeep

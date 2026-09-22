@@ -1,110 +1,132 @@
 #!/usr/bin/env bash
 set -u
 
-OK='[OK]'
-WARN='[AVISO]'
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MANIFEST="$ROOT_DIR/.super-dev-kit/manifest.json"
 
-check_cmd() {
-  local cmd="$1"
+TOTAL=0
+PASSED=0
+WARNINGS=0
+FAILED=0
 
-  if command -v "$cmd" >/dev/null 2>&1; then
-    printf '%-10s %-18s %s\n' "$OK" "$cmd" "$(command -v "$cmd")"
-  else
-    printf '%-10s %-18s %s\n' "$WARN" "$cmd" "não encontrado"
+add_check() {
+  local category="$1"
+  local name="$2"
+  local status="$3"
+  local detail="${4:-}"
+  local hint="${5:-}"
+  local label
+
+  if [[ "$status" != "SKIP" ]]; then
+    TOTAL=$((TOTAL + 1))
+  fi
+
+  case "$status" in
+    PASS)
+      PASSED=$((PASSED + 1))
+      label="[OK]"
+      ;;
+    WARN)
+      WARNINGS=$((WARNINGS + 1))
+      label="[AVISO]"
+      ;;
+    FAIL)
+      FAILED=$((FAILED + 1))
+      label="[FALHA]"
+      ;;
+    SKIP)
+      label="[SKIP]"
+      ;;
+  esac
+
+  printf '%-9s %-12s %s\n' "$label" "$category" "$name"
+
+  [[ -n "$detail" ]] && printf '          %s\n' "$detail"
+
+  if [[ -n "$hint" && ( "$status" == "WARN" || "$status" == "FAIL" ) ]]; then
+    printf '          Sugestão: %s\n' "$hint"
   fi
 }
 
-echo "=============================================="
-echo "          SUPER DEV KIT - DEV DOCTOR"
-echo "=============================================="
+echo "================================================"
+echo "       SUPER DEV KIT - DEV DOCTOR v2"
+echo "================================================"
 echo
 
-printf 'Sistema: '
 if [[ -r /etc/os-release ]]; then
+  # shellcheck source=/dev/null
   . /etc/os-release
-  echo "${PRETTY_NAME:-Linux}"
+  echo "Sistema: ${PRETTY_NAME:-Linux}"
 else
-  uname -a
+  echo "Sistema: $(uname -s)"
 fi
 
-echo "Kernel: $(uname -r)"
-echo "Hostname: $(hostname)"
-echo "IPs: $(hostname -I 2>/dev/null || true)"
+echo "Kernel:  $(uname -r)"
+echo "Host:    $(hostname)"
 echo
 
-echo "--- Ferramentas ---"
-for cmd in git node npm python3 docker curl wget ssh code jq; do
-  check_cmd "$cmd"
+available_kb="$(df -Pk / | awk 'NR==2 {print $4}')"
+
+if [[ "$available_kb" =~ ^[0-9]+$ ]] && (( available_kb > 5242880 )); then
+  add_check "Sistema" "Espaço em disco" "PASS" "$(df -h / | awk 'NR==2 {print $4 " livres"}')"
+else
+  add_check "Sistema" "Espaço em disco" "WARN" "$(df -h / | awk 'NR==2 {print $4 " livres"}')" "Mantenha pelo menos 5 GB livres."
+fi
+
+for cmd in git curl jq; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    add_check "Core" "$cmd" "PASS" "$(command -v "$cmd")"
+  else
+    add_check "Core" "$cmd" "FAIL" "" "Instale o pacote e confirme o PATH."
+  fi
 done
 
-echo
-echo "--- Recursos ---"
-df -h / | tail -n 1 || true
-free -h 2>/dev/null | sed -n '1,2p' || true
-
-echo
-echo "--- Docker ---"
+for cmd in node npm python3 code; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    add_check "Runtime" "$cmd" "PASS" "$(command -v "$cmd")"
+  else
+    add_check "Runtime" "$cmd" "SKIP" "Não instalado neste ambiente."
+  fi
+done
 
 if command -v docker >/dev/null 2>&1; then
-  docker --version || true
-
   if docker info >/dev/null 2>&1; then
-    echo "$OK Docker daemon acessível para o usuário atual."
+    add_check "Docker" "Daemon" "PASS"
   else
-    echo "$WARN Docker instalado, mas daemon/permissão precisa ser verificado."
-    echo "        Tente: sudo usermod -aG docker \$USER && newgrp docker"
+    add_check "Docker" "Daemon" "FAIL" "" "Verifique systemctl status docker e sua permissão no grupo docker."
   fi
 
   if docker compose version >/dev/null 2>&1; then
-    echo "$OK $(docker compose version)"
+    add_check "Docker" "Compose" "PASS" "$(docker compose version)"
   elif command -v docker-compose >/dev/null 2>&1; then
-    echo "$OK $(docker-compose --version)"
+    add_check "Docker" "Compose" "PASS" "$(docker-compose --version)"
   else
-    echo "$WARN Docker Compose não encontrado."
+    add_check "Docker" "Compose" "WARN" "" "Instale uma implementação compatível do Docker Compose."
   fi
 
-  echo "Pacotes Compose detectados:"
-  dpkg-query -W -f='  ${Package}: ${Status}\n' docker-compose-v2 docker-compose-plugin docker-compose 2>/dev/null || true
-else
-  echo "$WARN Docker não encontrado."
-fi
-
-echo
-echo "--- Grupos ---"
-
-if id -nG "$USER" | grep -qw docker; then
-  echo "$OK Usuário pertence ao grupo docker."
-else
-  echo "$WARN Usuário ainda não pertence ao grupo docker."
-fi
-
-if getent group vboxsf >/dev/null 2>&1; then
-  if id -nG "$USER" | grep -qw vboxsf; then
-    echo "$OK Usuário pertence ao grupo vboxsf."
+  if id -nG "$USER" | grep -qw docker; then
+    add_check "Docker" "Grupo docker" "PASS"
   else
-    echo "$WARN Grupo vboxsf existe, mas o usuário não pertence a ele."
+    add_check "Docker" "Grupo docker" "WARN" "" "sudo usermod -aG docker \$USER && newgrp docker"
   fi
+else
+  add_check "Docker" "Docker CLI" "SKIP" "Docker não instalado."
 fi
-
-echo
-echo "--- SSH ---"
 
 if systemctl is-active --quiet ssh 2>/dev/null; then
-  echo "$OK SSH ativo."
+  add_check "SSH" "Serviço" "PASS"
+elif command -v ssh >/dev/null 2>&1; then
+  add_check "SSH" "Serviço" "WARN" "Cliente disponível, servidor não ativo." "sudo systemctl enable --now ssh"
 else
-  echo "$WARN SSH não está ativo ou systemd não está disponível."
+  add_check "SSH" "Disponibilidade" "SKIP" "SSH não instalado."
 fi
 
-echo
-echo "--- Pastas compartilhadas VirtualBox ---"
-if compgen -G "/media/sf_*" >/dev/null; then
-  printf '%s\n' /media/sf_*
+if getent hosts registry-1.docker.io >/dev/null 2>&1; then
+  add_check "Rede" "DNS Docker Hub" "PASS"
 else
-  echo "Nenhuma pasta /media/sf_* encontrada."
+  add_check "Rede" "DNS Docker Hub" "FAIL" "" "Verifique DNS, VPN, proxy ou firewall."
 fi
 
-echo
-echo "--- HTTPS / Docker Hub ---"
 TMP_BODY="$(mktemp)"
 TMP_ERR="$(mktemp)"
 trap 'rm -f "$TMP_BODY" "$TMP_ERR"' EXIT
@@ -115,17 +137,64 @@ CURL_RC=$?
 set -e
 
 if [[ $CURL_RC -eq 0 ]]; then
-  echo "$OK TLS/HTTPS respondeu. HTTP $HTTP_CODE."
+  add_check "Rede" "TLS/HTTPS" "PASS" "HTTP $HTTP_CODE"
 else
-  echo "$WARN Falha TLS/HTTPS:"
-  cat "$TMP_ERR"
-  echo
-  echo "Emissor apresentado pela rede:"
-  curl -vk https://registry-1.docker.io/v2/ 2>&1 | grep -Ei 'issuer:|subject:' || true
-  echo
-  echo "Se for uma CA corporativa autorizada:"
-  echo "  sudo bash certificates/import-ca-linux.sh --auto"
+  add_check "Rede" "TLS/HTTPS" "FAIL" "$(cat "$TMP_ERR")" "Verifique proxy/certificado corporativo."
+fi
+
+if [[ -f "$MANIFEST" ]]; then
+  if jq -e '.schema_version == 1' "$MANIFEST" >/dev/null 2>&1; then
+    add_check "Estado" "Manifesto" "PASS" "$MANIFEST"
+  else
+    add_check "Estado" "Manifesto" "WARN" "Schema ausente ou desconhecido."
+  fi
+
+  mapfile -t owned_packages < <(
+    jq -r '.packages[]
+      | select(.manager == "apt" and .installed_by_devkit == true and .present == true)
+      | .id' "$MANIFEST" 2>/dev/null
+  )
+
+  missing=()
+
+  for pkg in "${owned_packages[@]}"; do
+    if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+      missing+=("$pkg")
+    fi
+  done
+
+  if [[ ${#missing[@]} -eq 0 ]]; then
+    add_check "Estado" "Drift de pacotes" "PASS" "Nenhum pacote gerenciado desapareceu."
+  else
+    add_check "Estado" "Drift de pacotes" "WARN" "$(IFS=,; echo "${missing[*]}")" "Reaplique a stack/perfil ou atualize o manifesto."
+  fi
+else
+  add_check "Estado" "Manifesto" "SKIP" "Ainda não criado; execute uma instalação v0.4+."
+fi
+
+if [[ "$TOTAL" -gt 0 ]]; then
+  SCORE=$((PASSED * 100 / TOTAL))
+else
+  SCORE=0
 fi
 
 echo
-echo "Diagnóstico concluído."
+echo "================================================"
+echo "Resumo"
+echo "================================================"
+echo "Score:    $SCORE%"
+echo "Checks:   $TOTAL"
+echo "OK:       $PASSED"
+echo "Avisos:   $WARNINGS"
+echo "Falhas:   $FAILED"
+
+if [[ "$FAILED" -eq 0 && "$WARNINGS" -eq 0 ]]; then
+  echo
+  echo "Ambiente saudável para os checks aplicáveis."
+elif [[ "$FAILED" -eq 0 ]]; then
+  echo
+  echo "Ambiente utilizável, com pontos de atenção."
+else
+  echo
+  echo "Há falhas que merecem correção antes de continuar."
+fi

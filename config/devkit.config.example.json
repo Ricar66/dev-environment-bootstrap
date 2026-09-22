@@ -14,5 +14,15 @@
   "certificate": {
     "auto": false,
     "path": ""
+  },
+  "proxy": {
+    "http": "",
+    "https": "",
+    "no_proxy": ""
+  },
+  "custom": {
+    "windows_packages": [],
+    "linux_packages": [],
+    "vscode_extensions": []
   }
 }

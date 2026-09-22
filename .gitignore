@@ -35,3 +35,6 @@ config/devkit.config.json
 # Generated inventories / reports
 reports/*
 !reports/.gitkeep
+
+# Local Super Dev Kit state, backups and structured logs
+.super-dev-kit/

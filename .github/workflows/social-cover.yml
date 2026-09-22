@@ -1,0 +1,52 @@
+name: Render Social Launch Cover
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "assets/social/super-dev-kit-v1-instagram.svg"
+      - ".github/workflows/social-cover.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-social-cover
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y librsvg2-bin python3-pil
+
+      - name: Render JPEG
+        run: |
+          set -euo pipefail
+          rsvg-convert -w 1080 -h 1350 assets/social/super-dev-kit-v1-instagram.svg > /tmp/cover.png
+          python3 - <<'PY'
+          from PIL import Image
+          img = Image.open('/tmp/cover.png').convert('RGB')
+          img.save('assets/social/super-dev-kit-v1-instagram.jpg', quality=94, optimize=True, progressive=True)
+          PY
+          file assets/social/super-dev-kit-v1-instagram.jpg
+
+      - name: Commit rendered asset
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/social/super-dev-kit-v1-instagram.jpg
+          if git diff --cached --quiet; then
+            echo "Social cover already up to date."
+            exit 0
+          fi
+          git commit -m "docs: renderiza capa social v1.0.0"
+          git push origin HEAD:main

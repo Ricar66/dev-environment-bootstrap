@@ -9,6 +9,7 @@ $commandsFile = Join-Path $root "cli\commands.json"
 $exitUsage = 64
 $exitUnavailable = 69
 $exitInternal = 70
+$script:JsonMode = $false
 
 function Get-DevKitVersion {
     if (Test-Path $versionFile) {
@@ -48,8 +49,17 @@ function Write-JsonEnvelope {
 function Stop-Usage {
     param([Parameter(Mandatory)][string]$Message)
 
-    Write-Host "Erro: $Message" -ForegroundColor Red
-    Write-Host "Use 'devkit help' para ver os comandos."
+    if ($script:JsonMode) {
+        Write-JsonEnvelope -Command "cli" -ExitCode $exitUsage -Data @{
+            error = $Message
+            hint  = "Use 'devkit help' para ver os comandos."
+        }
+    }
+    else {
+        Write-Host "Erro: $Message" -ForegroundColor Red
+        Write-Host "Use 'devkit help' para ver os comandos."
+    }
+
     exit $exitUsage
 }
 
@@ -242,6 +252,7 @@ foreach ($item in $cliArgs) {
 }
 
 $cliArgs = @($filtered)
+$script:JsonMode = $json
 
 if ($cliArgs.Count -eq 0) {
     Show-Help

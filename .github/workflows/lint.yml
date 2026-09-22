@@ -22,9 +22,14 @@ jobs:
           bash -n setup.sh
           bash -n linux/bootstrap-vm-ubuntu.sh
           bash -n diagnostics/dev-doctor.sh
+          bash -n certificates/import-ca-linux.sh
 
       - name: Run ShellCheck
-        run: shellcheck setup.sh linux/bootstrap-vm-ubuntu.sh diagnostics/dev-doctor.sh
+        run: |
+          shellcheck setup.sh
+          shellcheck linux/bootstrap-vm-ubuntu.sh
+          shellcheck diagnostics/dev-doctor.sh
+          shellcheck certificates/import-ca-linux.sh
 
   powershell:
     runs-on: windows-latest
@@ -41,7 +46,8 @@ jobs:
           $files = @(
             "setup.ps1",
             "windows/setup-windows.ps1",
-            "diagnostics/dev-doctor.ps1"
+            "diagnostics/dev-doctor.ps1",
+            "certificates/export-root-ca.ps1"
           )
 
           $results = foreach ($file in $files) {

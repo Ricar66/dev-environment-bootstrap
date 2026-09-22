@@ -16,6 +16,7 @@ $backupVsCode = Join-Path $root "tools\backup-vscode.ps1"
 $restoreVsCode = Join-Path $root "tools\restore-vscode.ps1"
 $backupGit = Join-Path $root "tools\backup-git.ps1"
 $restoreGit = Join-Path $root "tools\restore-git.ps1"
+$stackWizard = Join-Path $root "tools\stack-wizard.ps1"
 $configExample = Join-Path $root "config\devkit.config.example.json"
 $configLocal = Join-Path $root "config\devkit.config.json"
 $versionFile = Join-Path $root "VERSION"
@@ -39,7 +40,7 @@ function Read-Profile {
         "3" { return "Backend" }
         "4" { return "FullStack" }
         "5" { return "DataSQL" }
-        "6" { return "DevOps" }
+        "8" { return "DevOps" }
         default { return $null }
     }
 }
@@ -54,24 +55,26 @@ function Show-Menu {
     Write-Host "                 SUPER DEV KIT v$version" -ForegroundColor Cyan
     Write-Host "====================================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "1.  Instalar por perfil"
-    Write-Host "2.  Instalar tudo"
-    Write-Host "3.  Dry-run de um perfil"
-    Write-Host "4.  Extensões VS Code por perfil"
-    Write-Host "5.  Executar configuração JSON"
-    Write-Host "6.  Dry-run da configuração JSON"
-    Write-Host "7.  Dev Doctor"
-    Write-Host "8.  Ver manifesto/estado local"
-    Write-Host "9.  Exportar inventário do ambiente"
-    Write-Host "10. Atualizar Super Dev Kit"
-    Write-Host "11. Preview de cleanup baseado no manifesto"
-    Write-Host "12. Backup do VS Code"
-    Write-Host "13. Preview de restore do VS Code"
-    Write-Host "14. Backup da configuração Git"
-    Write-Host "15. Preview de restore da configuração Git"
-    Write-Host "16. Exportar certificado CA confiável"
-    Write-Host "17. Criar configuração local a partir do exemplo"
-    Write-Host "18. Mostrar exemplos Docker"
+    Write-Host "1.  Stack Wizard"
+    Write-Host "2.  Dry-run do Stack Wizard"
+    Write-Host "3.  Instalar por perfil"
+    Write-Host "4.  Instalar tudo"
+    Write-Host "5.  Dry-run de um perfil"
+    Write-Host "6.  Extensões VS Code por perfil"
+    Write-Host "7.  Executar configuração JSON"
+    Write-Host "8.  Dry-run da configuração JSON"
+    Write-Host "9.  Dev Doctor"
+    Write-Host "10. Ver manifesto/estado local"
+    Write-Host "11. Exportar inventário do ambiente"
+    Write-Host "12. Atualizar Super Dev Kit"
+    Write-Host "13. Preview de cleanup baseado no manifesto"
+    Write-Host "14. Backup do VS Code"
+    Write-Host "15. Preview de restore do VS Code"
+    Write-Host "16. Backup da configuração Git"
+    Write-Host "17. Preview de restore da configuração Git"
+    Write-Host "18. Exportar certificado CA confiável"
+    Write-Host "19. Criar configuração local a partir do exemplo"
+    Write-Host "20. Mostrar exemplos Docker"
     Write-Host "0.  Sair"
     Write-Host ""
 }
@@ -86,6 +89,14 @@ while ($true) {
 
     switch ($choice) {
         "1" {
+            & $stackWizard
+            Pause-Menu
+        }
+        "2" {
+            & $stackWizard -DryRun
+            Pause-Menu
+        }
+        "3" {
             $profile = Read-Profile
             if ($profile) {
                 & $installer -Profile $profile
@@ -95,11 +106,11 @@ while ($true) {
             }
             Pause-Menu
         }
-        "2" {
+        "4" {
             & $installer -All
             Pause-Menu
         }
-        "3" {
+        "5" {
             $profile = Read-Profile
             if ($profile) {
                 & $installer -Profile $profile -DryRun
@@ -109,7 +120,7 @@ while ($true) {
             }
             Pause-Menu
         }
-        "4" {
+        "6" {
             $profile = Read-Profile
             if ($profile) {
                 & $extensions -Profile $profile
@@ -119,10 +130,10 @@ while ($true) {
             }
             Pause-Menu
         }
-        "5" {
+        "9" {
             if (-not (Test-Path $configLocal)) {
                 Write-Host "Configuração local não encontrada." -ForegroundColor Yellow
-                Write-Host "Use a opção 17 primeiro."
+                Write-Host "Use a opção 19 primeiro."
             }
             else {
                 & $configRunner -ConfigPath $configLocal
@@ -142,44 +153,44 @@ while ($true) {
             & $doctor
             Pause-Menu
         }
-        "8" {
+        "10" {
             & $showState
             Pause-Menu
         }
-        "9" {
+        "11" {
             & $inventory
             Pause-Menu
         }
-        "10" {
+        "12" {
             & $updater
             Pause-Menu
         }
-        "11" {
+        "13" {
             & $cleanup
             Pause-Menu
         }
-        "12" {
+        "14" {
             & $backupVsCode
             Pause-Menu
         }
-        "13" {
+        "15" {
             & $restoreVsCode
             Pause-Menu
         }
-        "14" {
+        "16" {
             & $backupGit
             Pause-Menu
         }
-        "15" {
+        "17" {
             & $restoreGit
             Pause-Menu
         }
-        "16" {
+        "18" {
             $search = Read-Host "Texto para procurar no certificado (ex.: senac.check, Zscaler, Fortinet)"
             & $certExporter -Search $search
             Pause-Menu
         }
-        "17" {
+        "19" {
             if (Test-Path $configLocal) {
                 Write-Host "config\devkit.config.json já existe." -ForegroundColor Yellow
             }
@@ -190,7 +201,7 @@ while ($true) {
             }
             Pause-Menu
         }
-        "18" {
+        "20" {
             Get-Content (Join-Path $root "examples\README.md")
             Pause-Menu
         }

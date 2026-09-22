@@ -27,7 +27,10 @@ echo "================================================"
 echo
 
 for i in "${!templates[@]}"; do
-  IFS='|' read -r key name description <<< "${templates[$i]}"
+  entry="${templates[$i]}"
+  rest="${entry#*|}"
+  name="${rest%%|*}"
+  description="${rest#*|}"
   echo "$((i + 1)). $name"
   echo "   $description"
 done
@@ -39,7 +42,7 @@ read -r -p "Escolha um template: " choice
 index=$((choice - 1))
 (( index >= 0 && index < ${#templates[@]} )) || { echo "Seleção inválida."; exit 1; }
 
-IFS='|' read -r template_key template_name template_description <<< "${templates[$index]}"
+template_key="${templates[$index]%%|*}"
 
 read -r -p "Nome do projeto: " project_name
 [[ -n "$project_name" ]] || { echo "Nome do projeto é obrigatório."; exit 1; }

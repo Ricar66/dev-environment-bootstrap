@@ -1,0 +1,7 @@
+{
+  "name": ".NET",
+  "slug": "dotnet",
+  "description": "Ambiente C#/.NET com Docker e VS Code.",
+  "base_profile": "backend",
+  "modules": ["dotnet", "docker"]
+}

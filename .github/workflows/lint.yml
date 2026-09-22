@@ -135,10 +135,14 @@ jobs:
 
           root = pathlib.Path(".super-dev-kit/ci-projects")
           for path in root.rglob("*"):
-              if path.is_file():
+              if not path.is_file():
+                  continue
+              try:
                   text = path.read_text(encoding="utf-8")
-                  if "{{PROJECT_" in text:
-                      raise SystemExit(f"placeholder não renderizado: {path}")
+              except UnicodeDecodeError:
+                  continue
+              if "{{PROJECT_" in text:
+                  raise SystemExit(f"placeholder não renderizado: {path}")
 
           ET.parse(root / "ci-dotnet" / "ci-dotnet.csproj")
           PY

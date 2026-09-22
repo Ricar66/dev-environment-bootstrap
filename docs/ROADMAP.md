@@ -91,13 +91,26 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 
 ## v0.8 — CLI unificada
 
-- [ ] `devkit setup`
-- [ ] `devkit doctor`
-- [ ] `devkit stack`
-- [ ] `devkit state`
-- [ ] `devkit export`
-- [ ] `devkit import`
-- [ ] `devkit update`
+- [x] `devkit setup`
+- [x] `devkit doctor`
+- [x] `devkit stack`
+- [x] `devkit project`
+- [x] `devkit runtime`
+- [x] `devkit state`
+- [x] `devkit export`
+- [x] `devkit import`
+- [x] `devkit compare`
+- [x] `devkit backup`
+- [x] `devkit inventory`
+- [x] `devkit cleanup`
+- [x] `devkit update`
+- [x] help consistente
+- [x] códigos de saída documentados
+- [x] dry-run padronizado por subcomando
+- [x] saída JSON para automações
+- [x] shim global opcional
+- [x] wrappers legados preservados
+- [x] smoke tests via CMD, PowerShell e Bash
 
 ## v0.9 — Preparação pública
 

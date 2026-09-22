@@ -44,6 +44,10 @@ jobs:
           bash -n tools/runtime-manager.sh
           bash -n tools/create-project.sh
           bash -n tools/project-wizard.sh
+          bash -n devkit.sh
+          bash -n tools/devkit.sh
+          bash -n tools/install-cli.sh
+          bash -n tools/uninstall-cli.sh
 
       - name: Run ShellCheck
         run: |
@@ -71,6 +75,10 @@ jobs:
           shellcheck -S warning tools/runtime-manager.sh
           shellcheck -S warning tools/create-project.sh
           shellcheck -S warning tools/project-wizard.sh
+          shellcheck -S warning devkit.sh
+          shellcheck -S warning tools/devkit.sh
+          shellcheck -S warning tools/install-cli.sh
+          shellcheck -S warning tools/uninstall-cli.sh
 
       - name: Validate JSON
         run: |
@@ -80,6 +88,7 @@ jobs:
           python3 -m json.tool versions/presets.json > /dev/null
           python3 -m json.tool versions/managers.json > /dev/null
           python3 -m json.tool templates/catalog.json > /dev/null
+          python3 -m json.tool cli/commands.json > /dev/null
           python3 -m json.tool templates/react-vite/package.json > /dev/null
           python3 -m json.tool templates/node-nest/package.json > /dev/null
           python3 -m json.tool templates/node-nest/tsconfig.json > /dev/null
@@ -106,6 +115,42 @@ jobs:
           bash tools/runtime-manager.sh --runtime dotnet --version 10.0.100 --manager dotnet-install --dry-run
           bash tools/runtime-manager.sh --runtime java --version 21-tem --manager sdkman --dry-run
           bash tools/runtime-manager.sh --runtime php --version 8.4.1 --manager phpenv --dry-run
+
+      - name: Linux unified CLI smoke test
+        run: |
+          bash devkit.sh version
+          bash devkit.sh commands
+          bash devkit.sh setup fullstack --dry-run
+          bash devkit.sh stack react --dry-run
+          bash devkit.sh project react-vite "CLI React" --output .super-dev-kit/cli-projects --dry-run
+          bash devkit.sh runtime node 22 --manager fnm --dry-run
+          bash devkit.sh import --lock tests/fixtures/environment-lock.minimal.json --dry-run
+          bash devkit.sh compare --lock tests/fixtures/environment-lock.minimal.json
+
+          bash devkit.sh version --json > /tmp/devkit-version.json
+          python3 -m json.tool /tmp/devkit-version.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-version.json"))["success"])')" = "True"
+
+          bash devkit.sh commands --json > /tmp/devkit-commands.json
+          python3 -m json.tool /tmp/devkit-commands.json > /dev/null
+
+          bash devkit.sh stack react --dry-run --json > /tmp/devkit-stack.json
+          python3 -m json.tool /tmp/devkit-stack.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-stack.json"))["command"])')" = "stack"
+
+          set +e
+          bash devkit.sh project --json > /tmp/devkit-invalid.json
+          code=$?
+          set -e
+          test "$code" -eq 64
+          python3 -m json.tool /tmp/devkit-invalid.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-invalid.json"))["exit_code"])')" = "64"
+
+          bash devkit.sh cli install
+          "$HOME/.local/bin/devkit" version
+          "$HOME/.local/bin/devkit" cli status
+          "$HOME/.local/bin/devkit" cli uninstall
+          test ! -e "$HOME/.local/bin/devkit"
 
       - name: Linux project templates smoke test
         run: |
@@ -173,6 +218,12 @@ jobs:
           bash tools/export-environment.sh --output .super-dev-kit/ci.lock.json
           python3 -m json.tool .super-dev-kit/ci.lock.json > /dev/null
 
+          bash devkit.sh state --json > /tmp/devkit-state.json
+          python3 -m json.tool /tmp/devkit-state.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-state.json"))["data"]["schema_version"])')" = "2"
+
+          bash devkit.sh cleanup
+
   windows:
     runs-on: windows-latest
 
@@ -210,7 +261,11 @@ jobs:
             "tools/compare-environment.ps1",
             "tools/runtime-manager.ps1",
             "tools/create-project.ps1",
-            "tools/project-wizard.ps1"
+            "tools/project-wizard.ps1",
+            "devkit.ps1",
+            "tools/devkit.ps1",
+            "tools/install-cli.ps1",
+            "tools/uninstall-cli.ps1"
           )
 
           $results = foreach ($file in $files) {
@@ -229,6 +284,7 @@ jobs:
           Get-Content versions/presets.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content versions/managers.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content templates/catalog.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content cli/commands.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content templates/react-vite/package.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content templates/node-nest/package.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content templates/node-nest/tsconfig.json -Raw | ConvertFrom-Json | Out-Null
@@ -256,6 +312,51 @@ jobs:
           .\tools\runtime-manager.ps1 -Runtime dotnet -Version 10.0.100 -Manager dotnet-install -DryRun
           .\tools\runtime-manager.ps1 -Runtime java -Version 21-tem -Manager sdkman -DryRun
           .\tools\runtime-manager.ps1 -Runtime php -Version 8.4.1 -Manager phpenv -DryRun
+
+      - name: Windows unified CLI smoke test
+        shell: powershell
+        run: |
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\devkit.ps1 version
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 version
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 commands
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 setup fullstack --dry-run
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 stack react --dry-run
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 project react-vite "CLI React" --output .\.super-dev-kit\cli-projects --dry-run
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 runtime node 22 --manager fnm --dry-run
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 import --lock .\tests\fixtures\environment-lock.minimal.json --dry-run
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 compare --lock .\tests\fixtures\environment-lock.minimal.json
+
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 version --json | Set-Content .\devkit-version.json -Encoding UTF8
+          $versionJson = Get-Content .\devkit-version.json -Raw | ConvertFrom-Json
+          if (-not $versionJson.success) { throw "JSON de version inválido" }
+
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 commands --json | Set-Content .\devkit-commands.json -Encoding UTF8
+          Get-Content .\devkit-commands.json -Raw | ConvertFrom-Json | Out-Null
+
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 stack react --dry-run --json | Set-Content .\devkit-stack.json -Encoding UTF8
+          $stackJson = Get-Content .\devkit-stack.json -Raw | ConvertFrom-Json
+          if ($stackJson.command -ne "stack") { throw "JSON delegado da stack inválido" }
+
+          $process = Start-Process powershell.exe -ArgumentList @(
+            "-NoLogo","-NoProfile","-ExecutionPolicy","Bypass",
+            "-File",".\tools\devkit.ps1","project","--json"
+          ) -Wait -PassThru -RedirectStandardOutput .\devkit-invalid.json
+          if ($process.ExitCode -ne 64) { throw "Código de uso esperado: 64; recebido: $($process.ExitCode)" }
+          $invalidJson = Get-Content .\devkit-invalid.json -Raw | ConvertFrom-Json
+          if ($invalidJson.exit_code -ne 64) { throw "Envelope JSON de erro inválido" }
+
+          .\tools\install-cli.ps1
+          $shim = Join-Path $env:LOCALAPPDATA "SuperDevKit\bin\devkit.cmd"
+          if (-not (Test-Path $shim)) { throw "Shim global não foi criado" }
+          & $shim version
+          & $shim cli status
+          & $shim cli uninstall
+
+          for ($i = 0; $i -lt 20 -and (Test-Path $shim); $i++) {
+            Start-Sleep -Milliseconds 250
+          }
+
+          if (Test-Path $shim) { throw "Shim global não foi removido pelo próprio comando global" }
 
       - name: Windows project templates smoke test
         shell: powershell
@@ -320,6 +421,12 @@ jobs:
           .\tools\export-environment.ps1 -OutputPath .\.super-dev-kit\ci.lock.json
           Get-Content .\.super-dev-kit\ci.lock.json -Raw | ConvertFrom-Json | Out-Null
 
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 state --json | Set-Content .\devkit-state.json -Encoding UTF8
+          $stateJson = Get-Content .\devkit-state.json -Raw | ConvertFrom-Json
+          if ($stateJson.data.schema_version -ne 2) { throw "state --json inválido" }
+
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 cleanup
+
       - name: Windows CMD smoke test
         shell: cmd
         run: |
@@ -333,3 +440,12 @@ jobs:
           call tools\compare-environment.cmd -LockPath .\tests\fixtures\environment-lock.minimal.json
           call tools\runtime-manager.cmd -Runtime node -Version 22 -Manager fnm -DryRun
           call tools\create-project.cmd -Template react-vite -Name cmd-react -OutputPath .\.super-dev-kit\cmd-projects -DryRun
+
+          call devkit.cmd version
+          call devkit.cmd commands
+          call devkit.cmd setup fullstack --dry-run
+          call devkit.cmd stack react --dry-run
+          call devkit.cmd project react-vite cmd-react --output .\.super-dev-kit\cmd-projects --dry-run
+          call devkit.cmd runtime node 22 --manager fnm --dry-run
+          call devkit.cmd import --lock .\tests\fixtures\environment-lock.minimal.json --dry-run
+          call devkit.cmd compare --lock .\tests\fixtures\environment-lock.minimal.json

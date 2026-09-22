@@ -13,6 +13,20 @@ A ideia é simples: em vez de configurar Git, Node.js, Docker, SSH, VS Code, fer
 
 Guia completo: [Quick Start passo a passo](docs/QUICKSTART.md)
 
+Depois de clonar o repositório, a nova CLI pode ser testada imediatamente:
+
+```cmd
+devkit.cmd version
+```
+
+```powershell
+.\devkit.ps1 version
+```
+
+```bash
+bash devkit.sh version
+```
+
 ### Windows — CMD ou PowerShell
 
 O Super Dev Kit suporta os dois terminais nativos do Windows.
@@ -250,6 +264,55 @@ Adapters atuais: fnm, nvm, pyenv, dotnet-install, SDKMAN e phpenv. Se nenhum est
 
 O Super Dev Kit não baixa version managers automaticamente. Veja [Version Manager Adapters](docs/VERSION-MANAGERS.md).
 
+## ⌨️ CLI unificada — v0.8
+
+A interface recomendada agora é a CLI `devkit`. Ela reaproveita os scripts já existentes e mantém compatibilidade com CMD, PowerShell e Bash.
+
+Sem instalar globalmente:
+
+```cmd
+devkit.cmd help
+devkit.cmd setup fullstack --dry-run
+```
+
+```powershell
+.\devkit.ps1 help
+.\devkit.ps1 doctor
+```
+
+```bash
+bash devkit.sh help
+bash devkit.sh stack react --dry-run
+```
+
+Depois de validar o clone, você pode instalar um shim global:
+
+```text
+devkit cli install
+```
+
+A partir daí, em um novo terminal:
+
+```text
+devkit setup fullstack
+devkit doctor
+devkit stack react
+devkit project react-vite meu-app
+devkit state
+devkit export
+devkit compare
+```
+
+Para automações:
+
+```text
+devkit version --json
+devkit state --json
+devkit stack react --dry-run --json
+```
+
+Os comandos antigos continuam funcionando. Veja o guia completo em [CLI unificada v0.8](docs/CLI.md).
+
 ## 🪟 Windows
 
 O instalador usa **winget** e pode ser executado tanto pelo CMD quanto pelo PowerShell.
@@ -439,6 +502,11 @@ Veja [examples/README.md](examples/README.md).
 .
 ├── setup.ps1
 ├── setup.sh
+├── devkit.cmd
+├── devkit.ps1
+├── devkit.sh
+├── cli/
+│   └── commands.json
 ├── windows/
 │   └── setup-windows.ps1
 ├── linux/
@@ -531,6 +599,7 @@ O Super Dev Kit busca ser:
 - [Ambientes reproduzíveis v0.6](docs/REPRODUCIBILITY.md)
 - [Project Templates v0.7](docs/PROJECT-TEMPLATES.md)
 - [Version Manager Adapters v0.7](docs/VERSION-MANAGERS.md)
+- [CLI unificada v0.8](docs/CLI.md)
 - [Perfis](docs/PROFILES.md)
 - [Windows](docs/WINDOWS.md)
 - [Ubuntu / VM](docs/UBUNTU-VM.md)

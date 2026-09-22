@@ -2,6 +2,37 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.8.0 - 2026-09-22
+
+### Adicionado
+
+- CLI unificada `devkit` para CMD, PowerShell e Bash;
+- launchers `devkit.cmd`, `devkit.ps1` e `devkit.sh`;
+- comandos `setup`, `doctor`, `stack`, `project`, `runtime`, `state`, `export`, `import`, `compare`, `backup`, `inventory`, `cleanup` e `update`;
+- instalação opcional de shim global com `devkit cli install`;
+- remoção segura do shim com `devkit cli uninstall`;
+- ajuda consistente por comando;
+- códigos de saída documentados;
+- opção global `--json` para automações;
+- contrato de comandos em `cli/commands.json`;
+- testes da CLI no Windows, Linux e CMD;
+- compatibilidade preservada com todos os scripts e wrappers anteriores.
+
+### Arquitetura
+
+A CLI atua como camada de orquestração e delega para scripts já existentes. Regras de instalação, diagnóstico, stacks, templates e ambiente reproduzível não foram duplicadas.
+
+### Automação
+
+A saída JSON usa um envelope estável com `command`, `success`, `exit_code`, `timestamp`, dados estruturados quando disponíveis e saída textual dos scripts legados quando necessário.
+
+### Segurança
+
+- o instalador global cria apenas um shim para o clone atual;
+- uninstall verifica se o shim pertence ao Super Dev Kit antes de removê-lo;
+- cleanup, certificados, version managers e demais proteções das versões anteriores permanecem inalterados.
+
+
 ## 0.7.0 - 2026-09-22
 
 ### Adicionado

@@ -13,6 +13,8 @@ $inventory = Join-Path $root "tools\inventory.ps1"
 $cleanup = Join-Path $root "tools\cleanup.ps1"
 $configExample = Join-Path $root "config\devkit.config.example.json"
 $configLocal = Join-Path $root "config\devkit.config.json"
+$versionFile = Join-Path $root "VERSION"
+$version = if (Test-Path $versionFile) { (Get-Content $versionFile -Raw).Trim() } else { "dev" }
 
 function Read-Profile {
     Write-Host ""
@@ -40,7 +42,7 @@ function Read-Profile {
 function Show-Menu {
     Clear-Host
     Write-Host "================================================" -ForegroundColor Cyan
-    Write-Host "                 SUPER DEV KIT" -ForegroundColor Cyan
+    Write-Host "              SUPER DEV KIT v$version" -ForegroundColor Cyan
     Write-Host "================================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "1.  Instalar por perfil"

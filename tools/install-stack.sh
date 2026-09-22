@@ -51,6 +51,12 @@ CATALOG="$ROOT_DIR/modules/catalog.json"
 STACK_FILE="$ROOT_DIR/stacks/$STACK.json"
 INSTALLER="$ROOT_DIR/linux/bootstrap-vm-ubuntu.sh"
 EXTENSIONS_INSTALLER="$ROOT_DIR/tools/install-vscode-extensions.sh"
+STATE_HELPER="$ROOT_DIR/tools/state.sh"
+
+if [[ -f "$STATE_HELPER" ]]; then
+  # shellcheck source=/dev/null
+  source "$STATE_HELPER"
+fi
 
 command -v python3 >/dev/null 2>&1 || {
   echo "python3 é necessário para resolver os presets."
@@ -188,5 +194,15 @@ echo
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "[OK] Plano da stack validado em dry-run."
 else
+  if declare -F state_add_stack >/dev/null 2>&1; then
+    state_add_stack "$STACK" || true
+
+    for module_name in "${MODULES[@]}"; do
+      [[ -n "$module_name" ]] && state_add_module "$module_name" || true
+    done
+
+    log_event "info" "stack_installed" "$STACK" || true
+  fi
+
   echo "[OK] Stack $NAME processada."
 fi

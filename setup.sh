@@ -23,6 +23,7 @@ RUNTIME_CHECKER="$ROOT_DIR/tools/check-runtime-versions.sh"
 PROJECT_WIZARD="$ROOT_DIR/tools/project-wizard.sh"
 CREATE_PROJECT="$ROOT_DIR/tools/create-project.sh"
 RUNTIME_MANAGER="$ROOT_DIR/tools/runtime-manager.sh"
+DEVKIT_CLI="$ROOT_DIR/tools/devkit.sh"
 CONFIG_EXAMPLE="$ROOT_DIR/config/devkit.config.example.json"
 CONFIG_LOCAL="$ROOT_DIR/config/devkit.config.json"
 VERSION_FILE="$ROOT_DIR/VERSION"
@@ -213,6 +214,7 @@ show_menu() {
 19. Mostrar exemplos Docker
 20. Ambientes reproduzíveis / lock file
 21. Project templates / version managers
+22. Instalar comando global devkit
 0.  Sair
 
 MENU
@@ -331,6 +333,10 @@ while true; do
       ;;
     21)
       show_project_tools_menu
+      ;;
+    22)
+      bash "$DEVKIT_CLI" cli install
+      pause_menu
       ;;
     0)
       exit 0

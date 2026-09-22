@@ -13,7 +13,22 @@ A ideia é simples: em vez de configurar Git, Node.js, Docker, SSH, VS Code, fer
 
 Guia completo: [Quick Start passo a passo](docs/QUICKSTART.md)
 
-### Windows
+### Windows — CMD ou PowerShell
+
+O Super Dev Kit suporta os dois terminais nativos do Windows.
+
+**CMD:**
+
+```cmd
+setup.cmd
+```
+
+**PowerShell:**
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\setup.ps1
+```
 
 Se ainda não tiver Git:
 
@@ -21,16 +36,27 @@ Se ainda não tiver Git:
 winget install --id Git.Git -e
 ```
 
-Depois:
+Depois, em CMD ou PowerShell:
 
-```powershell
+```text
 git clone https://github.com/Ricar66/dev-environment-bootstrap.git
 cd dev-environment-bootstrap
+```
+
+No **CMD como Administrador**:
+
+```cmd
+setup.cmd
+```
+
+No **PowerShell como Administrador**:
+
+```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\setup.ps1
 ```
 
-Abra o PowerShell como **Administrador**.
+Os wrappers `.cmd` chamam os scripts PowerShell internamente com `ExecutionPolicy Bypass` apenas para aquela execução.
 
 ### Ubuntu / Linux
 
@@ -93,7 +119,23 @@ Ela pode definir perfil, Git, Docker/WSL, extensões e certificado opcional. Vej
 
 ## 🪟 Windows
 
-O instalador usa **winget** e pode configurar:
+O instalador usa **winget** e pode ser executado tanto pelo CMD quanto pelo PowerShell.
+
+CMD:
+
+```cmd
+windows\setup-windows.cmd -Profile FullStack -DryRun
+windows\setup-windows.cmd -Profile FullStack
+```
+
+PowerShell:
+
+```powershell
+.\windows\setup-windows.ps1 -Profile FullStack -DryRun
+.\windows\setup-windows.ps1 -Profile FullStack
+```
+
+Ele pode configurar:
 
 - Git
 - Visual Studio Code

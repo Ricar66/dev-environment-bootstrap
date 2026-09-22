@@ -2,6 +2,31 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.4.0 - 2026-09-22
+
+### Adicionado
+
+- manifesto local por máquina em `.super-dev-kit/manifest.json`;
+- registro de pacotes preexistentes versus instalados pelo Super Dev Kit;
+- registro de extensões VS Code e recursos habilitados pelo kit;
+- logs estruturados em JSON Lines em `.super-dev-kit/logs/events.jsonl`;
+- visualizador de estado local para CMD, PowerShell e Bash;
+- cleanup baseado no manifesto, preservando itens preexistentes;
+- backup e restore de configurações do VS Code;
+- backup e restore seguro de configurações selecionadas do Git;
+- pacotes e extensões customizados via configuração declarativa;
+- suporte a variáveis de proxy HTTP/HTTPS/NO_PROXY na execução declarativa;
+- testes automatizados do manifesto e cleanup.
+
+### Segurança
+
+- `.super-dev-kit/` é ignorado pelo Git;
+- cleanup remove apenas itens marcados como instalados pelo kit;
+- ferramentas core e Docker continuam protegidos por padrão;
+- restore do VS Code cria backup de segurança antes de sobrescrever arquivos;
+- backup do Git exporta apenas chaves selecionadas e não inclui credenciais.
+
+
 ## 0.3.1 - 2026-09-22
 
 ### Adicionado

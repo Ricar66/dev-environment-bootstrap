@@ -1,0 +1,7 @@
+{
+  "name": "Node + NestJS",
+  "slug": "node-nest",
+  "description": "Backend Node.js/NestJS com Docker e ferramentas de API.",
+  "base_profile": "backend",
+  "modules": ["nestjs"]
+}

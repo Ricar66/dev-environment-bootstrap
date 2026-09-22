@@ -28,6 +28,7 @@ param(
     [switch]$WSL,
     [switch]$Extras,
     [switch]$All,
+    [switch]$DryRun,
 
     [string]$GitName,
     [string]$GitEmail
@@ -71,6 +72,11 @@ function Install-WingetPackage {
         [Parameter(Mandatory)][string]$Name
     )
 
+    if ($DryRun) {
+        Write-Host "[DRY-RUN] winget install --id $Id -e"
+        return
+    }
+
     if (Test-WingetPackage -Id $Id) {
         Write-Host "[OK] $Name já está instalado." -ForegroundColor Green
         Add-Content -Path $LogFile -Value "[OK] $Name já está instalado."
@@ -93,7 +99,7 @@ function Install-WingetPackage {
     }
 }
 
-if (-not (Test-Administrator)) {
+if (-not $DryRun -and -not (Test-Administrator)) {
     Write-Host "Abra o PowerShell como Administrador e execute novamente." -ForegroundColor Yellow
     exit 1
 }
@@ -103,13 +109,18 @@ Add-Content -Path $LogFile -Value "Início: $(Get-Date -Format o)"
 
 Write-Step "Verificando winget"
 
-if (-not (Test-Winget)) {
-    Write-Host "winget não foi encontrado." -ForegroundColor Red
-    Write-Host "Instale/atualize o App Installer pela Microsoft Store e tente novamente."
-    exit 1
-}
+if (-not $DryRun) {
+    if (-not (Test-Winget)) {
+        Write-Host "winget não foi encontrado." -ForegroundColor Red
+        Write-Host "Instale/atualize o App Installer pela Microsoft Store e tente novamente."
+        exit 1
+    }
 
-winget source update | Tee-Object -FilePath $LogFile -Append
+    winget source update | Tee-Object -FilePath $LogFile -Append
+}
+else {
+    Write-Host "[DRY-RUN] Nenhuma alteração será feita." -ForegroundColor Yellow
+}
 
 if ($All) {
     $Profile = "FullStack"
@@ -177,7 +188,11 @@ foreach ($pkg in $packages) {
 if ($WSL) {
     Write-Step "Configurando WSL"
 
-    $wslAvailable = $false
+    if ($DryRun) {
+        Write-Host "[DRY-RUN] Verificar/habilitar WSL"
+    }
+    else {
+        $wslAvailable = $false
 
     try {
         wsl --status *> $null
@@ -189,12 +204,13 @@ if ($WSL) {
         $wslAvailable = $false
     }
 
-    if ($wslAvailable) {
-        Write-Host "[OK] WSL já está disponível." -ForegroundColor Green
-    }
-    else {
-        Write-Host "Habilitando WSL. O Windows poderá solicitar reinicialização."
-        wsl --install --no-distribution
+        if ($wslAvailable) {
+            Write-Host "[OK] WSL já está disponível." -ForegroundColor Green
+        }
+        else {
+            Write-Host "Habilitando WSL. O Windows poderá solicitar reinicialização."
+            wsl --install --no-distribution
+        }
     }
 }
 
@@ -206,7 +222,13 @@ if ($Docker) {
 if ($GitName -or $GitEmail) {
     Write-Step "Configurando Git"
 
-    $gitExe = Get-Command git -ErrorAction SilentlyContinue
+    if ($DryRun) {
+        if ($GitName) { Write-Host "[DRY-RUN] git config --global user.name \"$GitName\"" }
+        if ($GitEmail) { Write-Host "[DRY-RUN] git config --global user.email \"$GitEmail\"" }
+        Write-Host "[DRY-RUN] git config --global init.defaultBranch main"
+    }
+    else {
+        $gitExe = Get-Command git -ErrorAction SilentlyContinue
 
     if (-not $gitExe) {
         Write-Warning "Git foi instalado, mas ainda não está no PATH desta sessão."
@@ -224,13 +246,19 @@ if ($GitName -or $GitEmail) {
         }
 
         git config --global init.defaultBranch main
+        }
     }
 }
 
 Write-Step "Resumo"
 
 Write-Host "Perfil: $Profile"
-Write-Host "Instalação concluída."
+if ($DryRun) {
+    Write-Host "Dry-run concluído. Nenhuma alteração foi feita."
+}
+else {
+    Write-Host "Instalação concluída."
+}
 Write-Host ""
 Write-Host "Feche e abra novamente o terminal para atualizar o PATH."
 Write-Host "Depois, execute:"

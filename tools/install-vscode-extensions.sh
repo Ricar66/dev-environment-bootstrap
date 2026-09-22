@@ -44,10 +44,16 @@ case "$PROFILE" in
     ;;
 esac
 
+CODE_AVAILABLE=1
+
 if ! command -v code >/dev/null 2>&1; then
-  echo "VS Code CLI ('code') não encontrado no PATH."
-  echo "Instale/abra o VS Code e tente novamente."
-  exit 1
+  CODE_AVAILABLE=0
+
+  if [[ "$DRY_RUN" -ne 1 ]]; then
+    echo "VS Code CLI ('code') não encontrado no PATH."
+    echo "Instale/abra o VS Code e tente novamente."
+    exit 1
+  fi
 fi
 
 base=(
@@ -102,7 +108,11 @@ case "$PROFILE" in
     ;;
 esac
 
-mapfile -t installed < <(code --list-extensions 2>/dev/null || true)
+installed=()
+
+if [[ "$CODE_AVAILABLE" -eq 1 ]]; then
+  mapfile -t installed < <(code --list-extensions 2>/dev/null || true)
+fi
 
 declare -A seen=()
 

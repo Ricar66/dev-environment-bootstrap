@@ -1,0 +1,32 @@
+name: Bug report
+description: Informe um problema nos scripts ou na documentação.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plataforma
+      options:
+        - Windows
+        - Ubuntu / Linux
+        - VirtualBox
+        - Docker
+        - Documentação
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: O que aconteceu?
+      description: Inclua a mensagem de erro, removendo qualquer dado sensível.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true

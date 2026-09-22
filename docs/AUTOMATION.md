@@ -42,6 +42,7 @@ Edite:
 {
   "profile": "fullstack",
   "install_vscode_extensions": true,
+  "non_interactive": false,
   "git": {
     "name": "Seu Nome",
     "email": "voce@exemplo.com"
@@ -59,6 +60,8 @@ Edite:
 ```
 
 O arquivo local é ignorado pelo Git.
+
+Quando `non_interactive` for `true`, o runner Linux passa `--yes` para confirmações suportadas. Use isso apenas quando você já revisou a configuração e confia nos certificados/caminhos informados.
 
 ### Executar
 
@@ -219,3 +222,20 @@ Para uma máquina nova:
 8. use os exemplos Docker para validar o ambiente.
 
 Esse fluxo deixa a configuração mais fácil de reproduzir e diagnosticar.
+
+
+## 9. Versão do kit
+
+A versão atual fica no arquivo:
+
+```text
+VERSION
+```
+
+Os menus exibem essa versão automaticamente.
+
+## 10. Troubleshooting
+
+Para erros comuns de Docker, VirtualBox, apt, SSH, VS Code e certificados:
+
+[Troubleshooting](TROUBLESHOOTING.md)

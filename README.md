@@ -224,6 +224,27 @@ devkit stack react --dry-run --json
 
 Útil para CI, scripts e integrações.
 
+<!-- CLI_MEDIA_START -->
+## 🎬 CLI em execução
+
+As capturas abaixo são geradas a partir de **execuções reais da CLI em CI**. Caminhos, usuários, hostnames, IPs e e-mails são sanitizados antes da publicação.
+
+| CLI Help | Full Stack dry-run |
+| --- | --- |
+| ![Super Dev Kit CLI help](docs/media/generated/cli-help.png) | ![Super Dev Kit full stack dry-run](docs/media/generated/setup-fullstack-dry-run.png) |
+
+| Dev Doctor | Project generator |
+| --- | --- |
+| ![Super Dev Kit Dev Doctor](docs/media/generated/dev-doctor.png) | ![Super Dev Kit project generator dry-run](docs/media/generated/project-react-vite-dry-run.png) |
+
+### Demo curta
+
+![Super Dev Kit real CLI demo](docs/media/generated/cli-demo.gif)
+
+Detalhes da captura: [manifesto de mídia](docs/media/generated/capture-manifest.json).
+
+<!-- CLI_MEDIA_END -->
+
 ## 🧩 Perfis disponíveis
 
 | Perfil | Indicado para | Base principal |

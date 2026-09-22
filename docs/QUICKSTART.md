@@ -39,7 +39,15 @@ cd dev-environment-bootstrap
 
 ## 3. Abra o menu
 
-### Windows
+### Windows — CMD
+
+Abra o Prompt de Comando como **Administrador**:
+
+```cmd
+setup.cmd
+```
+
+### Windows — PowerShell
 
 Abra o PowerShell como **Administrador**:
 
@@ -73,7 +81,13 @@ Se não souber qual usar, consulte [PROFILES.md](PROFILES.md).
 
 O dry-run mostra o que seria feito sem alterar a máquina.
 
-### Windows
+### Windows — CMD
+
+```cmd
+windows\setup-windows.cmd -Profile FullStack -DryRun
+```
+
+### Windows — PowerShell
 
 ```powershell
 .\windows\setup-windows.ps1 -Profile FullStack -DryRun
@@ -89,7 +103,13 @@ Depois execute normalmente.
 
 ## 6. Instale o perfil
 
-### Windows
+### Windows — CMD
+
+```cmd
+windows\setup-windows.cmd -Profile FullStack
+```
+
+### Windows — PowerShell
 
 ```powershell
 .\windows\setup-windows.ps1 -Profile FullStack

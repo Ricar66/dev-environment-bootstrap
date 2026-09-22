@@ -229,19 +229,37 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   exit 0
 fi
 
+run_with_retry() {
+  local attempt
+  for attempt in 1 2 3; do
+    echo "[EXEC $attempt/3] $*"
+    if "$@"; then
+      return 0
+    fi
+
+    if [[ "$attempt" -lt 3 ]]; then
+      echo "Tentativa falhou; tentando novamente em 3 segundos..."
+      sleep 3
+    fi
+  done
+
+  echo "Falha após 3 tentativas: $*"
+  return 1
+}
+
 if [[ "$INSTALL_DEPENDENCIES" -eq 1 ]]; then
   case "$TEMPLATE" in
     react-vite|node-nest)
       command -v npm >/dev/null 2>&1 || { echo "npm não encontrado."; exit 2; }
-      (cd "$TARGET_DIR" && npm install)
+      (cd "$TARGET_DIR" && run_with_retry npm install)
       ;;
     dotnet-webapi)
       command -v dotnet >/dev/null 2>&1 || { echo "dotnet não encontrado."; exit 2; }
-      (cd "$TARGET_DIR" && dotnet restore)
+      (cd "$TARGET_DIR" && run_with_retry dotnet restore)
       ;;
     python-api)
       command -v python3 >/dev/null 2>&1 || { echo "python3 não encontrado."; exit 2; }
-      (cd "$TARGET_DIR" && python3 -m pip install -r requirements.txt)
+      (cd "$TARGET_DIR" && run_with_retry python3 -m pip install -r requirements.txt)
       ;;
     docker-compose)
       echo "Nenhuma dependência local para instalar."

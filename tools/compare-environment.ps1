@@ -91,8 +91,15 @@ elseif (@($lock.packages.windows).Count -gt 0) {
 
 Write-Host "Versões de runtime:" -ForegroundColor Cyan
 
-set-location $root
-& $runtimeChecker -LockPath $LockPath
+$checkerArgs = @(
+    "-NoLogo",
+    "-NoProfile",
+    "-ExecutionPolicy", "Bypass",
+    "-File", $runtimeChecker,
+    "-LockPath", $LockPath
+)
+
+& powershell.exe @checkerArgs
 $runtimeExit = $LASTEXITCODE
 
 if ($runtimeExit -ne 0) {

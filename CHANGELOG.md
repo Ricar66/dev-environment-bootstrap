@@ -2,6 +2,35 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.7.0 - 2026-09-22
+
+### Adicionado
+
+- Project Wizard para CMD, PowerShell e Bash;
+- gerador local de projetos com dry-run e proteção contra sobrescrita;
+- templates React + Vite, Node + NestJS, .NET Web API, Python/FastAPI e Docker Compose;
+- geração opcional de Dev Containers;
+- metadados locais em `.devkit-project.json`;
+- instalação opcional de dependências com retry controlado e uso dos caches nativos dos gerenciadores;
+- adapters opcionais para fnm, nvm, pyenv, dotnet-install, SDKMAN e phpenv;
+- fallback nativo quando nenhum version manager compatível está disponível;
+- pinning explícito quando o manager escolhido oferece esse recurso;
+- documentação dedicada para templates e version managers;
+- smoke tests de geração de projetos em Windows e Linux.
+
+### Segurança
+
+- version managers não são baixados nem executados automaticamente;
+- argumentos de versão passam por validação;
+- nenhum adapter usa eval;
+- geração de projeto recusa sobrescrever diretórios não vazios sem opção explícita;
+- instalação de dependências continua opt-in.
+
+### Corrigido
+
+- opção DevOps no seletor de perfil do menu PowerShell voltou a responder à opção 6.
+
+
 ## 0.6.0 - 2026-09-22
 
 ### Adicionado

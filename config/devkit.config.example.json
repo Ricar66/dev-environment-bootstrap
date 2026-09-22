@@ -1,6 +1,7 @@
 {
   "profile": "fullstack",
   "install_vscode_extensions": true,
+  "non_interactive": false,
   "git": {
     "name": "",
     "email": ""

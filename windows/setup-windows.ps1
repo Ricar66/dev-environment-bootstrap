@@ -4,19 +4,17 @@
     Prepara um Windows para desenvolvimento usando winget.
 
 .DESCRIPTION
-    Instala ferramentas por perfil e ignora pacotes já instalados.
+    Instala ferramentas por perfil, suporta dry-run e registra em um manifesto
+    local quais pacotes já existiam e quais foram instalados pelo Super Dev Kit.
 
 .EXAMPLE
-    .\setup-windows.ps1 -Profile Frontend
+    .\setup-windows.ps1 -Profile FullStack
 
 .EXAMPLE
-    .\setup-windows.ps1 -Profile FullStack -GitName "Seu Nome" -GitEmail "voce@email.com"
+    .\setup-windows.ps1 -Profile FullStack -DryRun
 
 .EXAMPLE
-    .\setup-windows.ps1 -Profile DevOps
-
-.EXAMPLE
-    .\setup-windows.ps1 -All
+    .\setup-windows.ps1 -Profile Frontend -CustomPackages "Microsoft.AzureCLI","Hashicorp.Terraform"
 #>
 
 [CmdletBinding()]
@@ -31,12 +29,21 @@ param(
     [switch]$DryRun,
 
     [string]$GitName,
-    [string]$GitEmail
+    [string]$GitEmail,
+
+    [string[]]$CustomPackages = @()
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
+
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$StateHelper = Join-Path $RepoRoot "tools\state.ps1"
 $LogFile = Join-Path $PSScriptRoot "setup-windows.log"
+
+if (Test-Path $StateHelper) {
+    . $StateHelper
+}
 
 function Write-Step {
     param([Parameter(Mandatory)][string]$Message)
@@ -62,6 +69,10 @@ function Test-Winget {
 function Test-WingetPackage {
     param([Parameter(Mandatory)][string]$Id)
 
+    if (-not (Test-Winget)) {
+        return $false
+    }
+
     $result = winget list --id $Id -e --accept-source-agreements 2>$null | Out-String
     return $result -match [regex]::Escape($Id)
 }
@@ -77,35 +88,68 @@ function Install-WingetPackage {
         return
     }
 
-    if (Test-WingetPackage -Id $Id) {
+    $preexisting = Test-WingetPackage -Id $Id
+
+    if ($preexisting) {
         Write-Host "[OK] $Name já está instalado." -ForegroundColor Green
         Add-Content -Path $LogFile -Value "[OK] $Name já está instalado."
+
+        if (Get-Command Register-DevKitPackage -ErrorAction SilentlyContinue) {
+            Register-DevKitPackage -Id $Id -Name $Name -Manager "winget" -Preexisting $true -PresentAfter $true
+        }
+
         return
     }
 
     Write-Host "[INSTALANDO] $Name ($Id)" -ForegroundColor Cyan
     Add-Content -Path $LogFile -Value "[INSTALANDO] $Name ($Id)"
 
-    winget install `
-        --id $Id `
-        -e `
-        --accept-package-agreements `
-        --accept-source-agreements `
-        --silent
+    winget install --id $Id -e --accept-package-agreements --accept-source-agreements --silent
 
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Não foi possível instalar $Name ($Id). Código: $LASTEXITCODE"
-        Add-Content -Path $LogFile -Value "[AVISO] Falha: $Name ($Id), código $LASTEXITCODE"
+    $exitCode = $LASTEXITCODE
+    $presentAfter = Test-WingetPackage -Id $Id
+
+    if (Get-Command Register-DevKitPackage -ErrorAction SilentlyContinue) {
+        Register-DevKitPackage -Id $Id -Name $Name -Manager "winget" -Preexisting $false -PresentAfter $presentAfter
+    }
+
+    if ($exitCode -ne 0 -and -not $presentAfter) {
+        Write-Warning "Não foi possível instalar $Name ($Id). Código: $exitCode"
+        Add-Content -Path $LogFile -Value "[AVISO] Falha: $Name ($Id), código $exitCode"
+
+        if (Get-Command Write-DevKitEvent -ErrorAction SilentlyContinue) {
+            Write-DevKitEvent -Event "package_install_failed" -Level "warning" -Data @{
+                package = $Id
+                code    = $exitCode
+            }
+        }
+
+        return
+    }
+
+    Write-Host "[OK] $Name instalado." -ForegroundColor Green
+
+    if (Get-Command Write-DevKitEvent -ErrorAction SilentlyContinue) {
+        Write-DevKitEvent -Event "package_installed" -Data @{
+            package = $Id
+            manager = "winget"
+        }
     }
 }
 
 if (-not $DryRun -and -not (Test-Administrator)) {
-    Write-Host "Abra o PowerShell como Administrador e execute novamente." -ForegroundColor Yellow
+    Write-Host "Abra o CMD/PowerShell como Administrador e execute novamente." -ForegroundColor Yellow
     exit 1
 }
 
 "" | Set-Content -Path $LogFile
 Add-Content -Path $LogFile -Value "Início: $(Get-Date -Format o)"
+
+if (-not $DryRun -and (Get-Command Initialize-DevKitState -ErrorAction SilentlyContinue)) {
+    Initialize-DevKitState -Platform "windows"
+    Add-DevKitProfile -Profile $Profile
+    Write-DevKitEvent -Event "setup_started" -Data @{ profile = $Profile }
+}
 
 Write-Step "Verificando winget"
 
@@ -175,6 +219,12 @@ if ($Extras) {
     $profilePackages += @($postmanPackage, $dbeaverPackage)
 }
 
+foreach ($id in $CustomPackages) {
+    if ($id) {
+        $profilePackages += @{ Id = $id; Name = $id }
+    }
+}
+
 Write-Step "Perfil selecionado: $Profile"
 
 $packages = @($corePackages + $profilePackages) |
@@ -192,24 +242,29 @@ if ($WSL) {
         Write-Host "[DRY-RUN] Verificar/habilitar WSL"
     }
     else {
-        $wslAvailable = $false
+        $wslPreexisting = $false
 
-    try {
-        wsl --status *> $null
-        if ($LASTEXITCODE -eq 0) {
-            $wslAvailable = $true
+        try {
+            wsl --status *> $null
+            $wslPreexisting = ($LASTEXITCODE -eq 0)
         }
-    }
-    catch {
-        $wslAvailable = $false
-    }
+        catch {
+            $wslPreexisting = $false
+        }
 
-        if ($wslAvailable) {
+        $wslPresentAfter = $wslPreexisting
+
+        if ($wslPreexisting) {
             Write-Host "[OK] WSL já está disponível." -ForegroundColor Green
         }
         else {
             Write-Host "Habilitando WSL. O Windows poderá solicitar reinicialização."
             wsl --install --no-distribution
+            $wslPresentAfter = ($LASTEXITCODE -eq 0)
+        }
+
+        if (Get-Command Register-DevKitFeature -ErrorAction SilentlyContinue) {
+            Register-DevKitFeature -Name "WSL" -Preexisting $wslPreexisting -PresentAfter $wslPresentAfter
         }
     }
 }
@@ -230,22 +285,22 @@ if ($GitName -or $GitEmail) {
     else {
         $gitExe = Get-Command git -ErrorAction SilentlyContinue
 
-    if (-not $gitExe) {
-        Write-Warning "Git foi instalado, mas ainda não está no PATH desta sessão."
-        Write-Host "Reabra o terminal e execute novamente a configuração do Git."
-    }
-    else {
-        if ($GitName) {
-            git config --global user.name "$GitName"
-            Write-Host "[OK] git user.name configurado." -ForegroundColor Green
+        if (-not $gitExe) {
+            Write-Warning "Git foi instalado, mas ainda não está no PATH desta sessão."
+            Write-Host "Reabra o terminal e execute novamente a configuração do Git."
         }
+        else {
+            if ($GitName) {
+                git config --global user.name "$GitName"
+                Write-Host "[OK] git user.name configurado." -ForegroundColor Green
+            }
 
-        if ($GitEmail) {
-            git config --global user.email "$GitEmail"
-            Write-Host "[OK] git user.email configurado." -ForegroundColor Green
-        }
+            if ($GitEmail) {
+                git config --global user.email "$GitEmail"
+                Write-Host "[OK] git user.email configurado." -ForegroundColor Green
+            }
 
-        git config --global init.defaultBranch main
+            git config --global init.defaultBranch main
         }
     }
 }
@@ -253,18 +308,32 @@ if ($GitName -or $GitEmail) {
 Write-Step "Resumo"
 
 Write-Host "Perfil: $Profile"
+
 if ($DryRun) {
     Write-Host "Dry-run concluído. Nenhuma alteração foi feita."
 }
 else {
     Write-Host "Instalação concluída."
+
+    if (Get-Command Write-DevKitEvent -ErrorAction SilentlyContinue) {
+        Write-DevKitEvent -Event "setup_completed" -Data @{ profile = $Profile }
+    }
+
+    if (Get-Command Get-DevKitState -ErrorAction SilentlyContinue) {
+        Write-Host ""
+        Write-Host "Manifesto local:"
+        Write-Host "  $script:DevKitManifestPath"
+    }
 }
+
 Write-Host ""
 Write-Host "Feche e abra novamente o terminal para atualizar o PATH."
 Write-Host "Depois, execute:"
+Write-Host "  diagnostics\dev-doctor.cmd"
+Write-Host "ou:"
 Write-Host "  .\diagnostics\dev-doctor.ps1"
 Write-Host ""
-Write-Host "Log:"
+Write-Host "Log simples:"
 Write-Host "  $LogFile"
 
 if ($Docker) {

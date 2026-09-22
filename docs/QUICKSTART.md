@@ -1,100 +1,109 @@
-# Quick Start — passo a passo
+# Quick Start — Super Dev Kit
 
-Este guia mostra o caminho mais simples para usar o Super Dev Kit em uma máquina nova.
+Este é o fluxo recomendado para preparar uma máquina nova com o Super Dev Kit.
 
-## 1. Clonar o repositório
+## 1. Instale o Git
 
 ### Windows
 
-Se o Git ainda não estiver instalado:
+Abra o PowerShell:
 
 ```powershell
 winget install --id Git.Git -e
 ```
 
-Feche e abra o terminal. Depois:
-
-```powershell
-git clone https://github.com/Ricar66/dev-environment-bootstrap.git
-cd dev-environment-bootstrap
-```
+Feche e abra o terminal.
 
 ### Ubuntu / Linux
 
 ```bash
 sudo apt update
 sudo apt install -y git
+```
 
+## 2. Clone o repositório
+
+Windows:
+
+```powershell
 git clone https://github.com/Ricar66/dev-environment-bootstrap.git
 cd dev-environment-bootstrap
 ```
 
-## 2. Executar no Windows
+Linux:
 
-Abra o **PowerShell como Administrador**:
+```bash
+git clone https://github.com/Ricar66/dev-environment-bootstrap.git
+cd dev-environment-bootstrap
+```
+
+## 3. Abra o menu
+
+### Windows
+
+Abra o PowerShell como **Administrador**:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\setup.ps1
 ```
 
-Escolha o perfil desejado no menu.
-
-Também é possível executar diretamente:
-
-```powershell
-.\windows\setup-windows.ps1 -Profile FullStack
-```
-
-## 3. Executar no Ubuntu
-
-Use `bash` para não depender da permissão executável preservada pelo Git:
+### Linux
 
 ```bash
 bash setup.sh
 ```
 
-Ou diretamente:
+O menu virou a central de operações do projeto.
+
+## 4. Escolha um perfil
+
+Perfis disponíveis:
+
+- Essential
+- Frontend
+- Backend
+- Full Stack
+- Data / SQL
+- DevOps
+
+Se não souber qual usar, consulte [PROFILES.md](PROFILES.md).
+
+## 5. Faça um dry-run primeiro
+
+O dry-run mostra o que seria feito sem alterar a máquina.
+
+### Windows
+
+```powershell
+.\windows\setup-windows.ps1 -Profile FullStack -DryRun
+```
+
+### Linux
+
+```bash
+bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --dry-run
+```
+
+Depois execute normalmente.
+
+## 6. Instale o perfil
+
+### Windows
+
+```powershell
+.\windows\setup-windows.ps1 -Profile FullStack
+```
+
+### Linux
 
 ```bash
 sudo bash linux/bootstrap-vm-ubuntu.sh --profile fullstack
 ```
 
-## 4. Certificado corporativo é opcional
+Ou faça tudo pelo menu principal.
 
-A maioria das máquinas **não precisa instalar certificado adicional**.
-
-Primeiro tente:
-
-```bash
-docker run --rm hello-world
-```
-
-Se funcionar, não faça nada relacionado a certificados.
-
-Se aparecer:
-
-```text
-x509: certificate signed by unknown authority
-```
-
-ou:
-
-```text
-self-signed certificate in certificate chain
-```
-
-a rede provavelmente usa inspeção HTTPS.
-
-Descubra o emissor:
-
-```bash
-curl -vk https://registry-1.docker.io/v2/ 2>&1 | grep -i issuer
-```
-
-Depois siga [Certificados corporativos](CERTIFICADOS-CORPORATIVOS.md).
-
-## 5. Dev Doctor
+## 7. Valide o ambiente
 
 Windows:
 
@@ -108,16 +117,118 @@ Linux:
 bash diagnostics/dev-doctor.sh
 ```
 
-## 6. Atualizar o Super Dev Kit
-
-Dentro da pasta do projeto:
+Para Docker:
 
 ```bash
-git pull
+docker run --rm hello-world
 ```
 
-ou no PowerShell:
+## 8. Certificado corporativo é opcional
+
+A maioria das máquinas não precisa de certificado adicional.
+
+Se Docker e HTTPS funcionarem, ignore esta etapa.
+
+Somente se aparecer erro como:
+
+```text
+x509: certificate signed by unknown authority
+```
+
+consulte [CERTIFICADOS-CORPORATIVOS.md](CERTIFICADOS-CORPORATIVOS.md).
+
+## 9. Instale extensões do VS Code
+
+Windows:
 
 ```powershell
-git pull
+.\tools\install-vscode-extensions.ps1 -Profile FullStack
 ```
+
+Linux:
+
+```bash
+bash tools/install-vscode-extensions.sh --profile fullstack
+```
+
+## 10. Configuração automática por JSON
+
+Crie sua configuração local:
+
+### Windows
+
+```powershell
+Copy-Item .\config\devkit.config.example.json .\config\devkit.config.json
+```
+
+### Linux
+
+```bash
+cp config/devkit.config.example.json config/devkit.config.json
+```
+
+Edite o JSON e execute pelo menu ou:
+
+Windows:
+
+```powershell
+.\tools\run-config.ps1
+```
+
+Linux:
+
+```bash
+bash tools/run-config.sh
+```
+
+Para visualizar antes:
+
+```powershell
+.\tools\run-config.ps1 -DryRun
+```
+
+ou:
+
+```bash
+bash tools/run-config.sh --dry-run
+```
+
+## 11. Gere um inventário
+
+Depois da instalação, registre o ambiente:
+
+Windows:
+
+```powershell
+.\tools\inventory.ps1
+```
+
+Linux:
+
+```bash
+bash tools/inventory.sh
+```
+
+Os relatórios ficam em `reports/` e não são enviados ao Git.
+
+## 12. Atualize o kit
+
+Windows:
+
+```powershell
+.\tools\update-devkit.ps1
+```
+
+Linux:
+
+```bash
+bash tools/update-devkit.sh
+```
+
+O updater recusa atualizar se houver alterações locais não salvas.
+
+## Próximo passo
+
+Conheça a automação completa:
+
+[Automação avançada v0.3](AUTOMATION.md)

@@ -21,6 +21,9 @@ $exportEnvironment = Join-Path $root "tools\export-environment.ps1"
 $importEnvironment = Join-Path $root "tools\import-environment.ps1"
 $compareEnvironment = Join-Path $root "tools\compare-environment.ps1"
 $runtimeChecker = Join-Path $root "tools\check-runtime-versions.ps1"
+$projectWizard = Join-Path $root "tools\project-wizard.ps1"
+$createProject = Join-Path $root "tools\create-project.ps1"
+$runtimeManager = Join-Path $root "tools\runtime-manager.ps1"
 $configExample = Join-Path $root "config\devkit.config.example.json"
 $configLocal = Join-Path $root "config\devkit.config.json"
 $versionFile = Join-Path $root "VERSION"
@@ -44,7 +47,7 @@ function Read-Profile {
         "3" { return "Backend" }
         "4" { return "FullStack" }
         "5" { return "DataSQL" }
-        "8" { return "DevOps" }
+        "6" { return "DevOps" }
         default { return $null }
     }
 }
@@ -117,6 +120,70 @@ function Show-ReproducibilityMenu {
     }
 }
 
+function Show-ProjectToolsMenu {
+    while ($true) {
+        Clear-Host
+        Write-Host "====================================================" -ForegroundColor Cyan
+        Write-Host "       PROJECT TEMPLATES & VERSION MANAGERS" -ForegroundColor Cyan
+        Write-Host "====================================================" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "1. Project Wizard"
+        Write-Host "2. Dry-run do Project Wizard"
+        Write-Host "3. Listar templates"
+        Write-Host "4. Listar version managers"
+        Write-Host "5. Configurar runtime com adapter"
+        Write-Host "6. Dry-run de runtime adapter"
+        Write-Host "0. Voltar"
+        Write-Host ""
+
+        $subChoice = Read-Host "Escolha uma opção"
+
+        switch ($subChoice) {
+            "1" {
+                & $projectWizard
+                Pause-Menu
+            }
+            "2" {
+                & $projectWizard -DryRun
+                Pause-Menu
+            }
+            "3" {
+                & $createProject -List
+                Pause-Menu
+            }
+            "4" {
+                & $runtimeManager -List
+                Pause-Menu
+            }
+            "5" {
+                $runtime = Read-Host "Runtime (node/python/dotnet/java/php)"
+                $runtimeVersion = Read-Host "Versão exata do manager"
+                $manager = Read-Host "Manager [auto]"
+                if (-not $manager) { $manager = "auto" }
+
+                & $runtimeManager -Runtime $runtime -Version $runtimeVersion -Manager $manager
+                Pause-Menu
+            }
+            "6" {
+                $runtime = Read-Host "Runtime (node/python/dotnet/java/php)"
+                $runtimeVersion = Read-Host "Versão exata do manager"
+                $manager = Read-Host "Manager [auto]"
+                if (-not $manager) { $manager = "auto" }
+
+                & $runtimeManager -Runtime $runtime -Version $runtimeVersion -Manager $manager -DryRun
+                Pause-Menu
+            }
+            "0" {
+                return
+            }
+            default {
+                Write-Host "Opção inválida." -ForegroundColor Yellow
+                Start-Sleep -Seconds 1
+            }
+        }
+    }
+}
+
 function Show-Menu {
     Clear-Host
     Write-Host "====================================================" -ForegroundColor Cyan
@@ -144,6 +211,7 @@ function Show-Menu {
     Write-Host "19. Criar configuração local a partir do exemplo"
     Write-Host "20. Mostrar exemplos Docker"
     Write-Host "21. Ambientes reproduzíveis / lock file"
+    Write-Host "22. Project templates / version managers"
     Write-Host "0.  Sair"
     Write-Host ""
 }
@@ -276,6 +344,9 @@ while ($true) {
         }
         "21" {
             Show-ReproducibilityMenu
+        }
+        "22" {
+            Show-ProjectToolsMenu
         }
         "0" {
             return

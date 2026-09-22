@@ -20,6 +20,9 @@ EXPORT_ENVIRONMENT="$ROOT_DIR/tools/export-environment.sh"
 IMPORT_ENVIRONMENT="$ROOT_DIR/tools/import-environment.sh"
 COMPARE_ENVIRONMENT="$ROOT_DIR/tools/compare-environment.sh"
 RUNTIME_CHECKER="$ROOT_DIR/tools/check-runtime-versions.sh"
+PROJECT_WIZARD="$ROOT_DIR/tools/project-wizard.sh"
+CREATE_PROJECT="$ROOT_DIR/tools/create-project.sh"
+RUNTIME_MANAGER="$ROOT_DIR/tools/runtime-manager.sh"
 CONFIG_EXAMPLE="$ROOT_DIR/config/devkit.config.example.json"
 CONFIG_LOCAL="$ROOT_DIR/config/devkit.config.json"
 VERSION_FILE="$ROOT_DIR/VERSION"
@@ -118,6 +121,70 @@ MENU
   done
 }
 
+show_project_tools_menu() {
+  while true; do
+    clear || true
+    cat <<MENU
+====================================================
+       PROJECT TEMPLATES & VERSION MANAGERS
+====================================================
+
+1. Project Wizard
+2. Dry-run do Project Wizard
+3. Listar templates
+4. Listar version managers
+5. Configurar runtime com adapter
+6. Dry-run de runtime adapter
+0. Voltar
+
+MENU
+
+    read -r -p "Escolha uma opção: " sub_choice
+
+    case "$sub_choice" in
+      1)
+        bash "$PROJECT_WIZARD"
+        pause_menu
+        ;;
+      2)
+        bash "$PROJECT_WIZARD" --dry-run
+        pause_menu
+        ;;
+      3)
+        bash "$CREATE_PROJECT" --list
+        pause_menu
+        ;;
+      4)
+        bash "$RUNTIME_MANAGER" --list
+        pause_menu
+        ;;
+      5|6)
+        read -r -p "Runtime (node/python/dotnet/java/php): " runtime
+        read -r -p "Versão exata do manager: " runtime_version
+        read -r -p "Manager [auto]: " manager
+        manager="${manager:-auto}"
+
+        args=(
+          --runtime "$runtime"
+          --version "$runtime_version"
+          --manager "$manager"
+        )
+
+        [[ "$sub_choice" == "6" ]] && args+=(--dry-run)
+        bash "$RUNTIME_MANAGER" "${args[@]}"
+        pause_menu
+        ;;
+      0)
+        return
+        ;;
+      *)
+        echo "Opção inválida."
+        sleep 1
+        ;;
+    esac
+  done
+}
+
 show_menu() {
   clear || true
   cat <<MENU
@@ -145,6 +212,7 @@ show_menu() {
 18. Criar configuração local a partir do exemplo
 19. Mostrar exemplos Docker
 20. Ambientes reproduzíveis / lock file
+21. Project templates / version managers
 0.  Sair
 
 MENU
@@ -260,6 +328,9 @@ while true; do
       ;;
     20)
       show_reproducibility_menu
+      ;;
+    21)
+      show_project_tools_menu
       ;;
     0)
       exit 0

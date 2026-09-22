@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "templates": {
+    "react-vite": {
+      "name": "React + Vite",
+      "description": "Starter React com Vite, ESLint-friendly e estrutura mínima.",
+      "source": "templates/react-vite",
+      "runtime": "node",
+      "install_command": "npm install",
+      "devcontainer_image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm"
+    },
+    "node-nest": {
+      "name": "Node + NestJS",
+      "description": "Starter NestJS mínimo com TypeScript.",
+      "source": "templates/node-nest",
+      "runtime": "node",
+      "install_command": "npm install",
+      "devcontainer_image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm"
+    },
+    "dotnet-webapi": {
+      "name": ".NET Web API",
+      "description": "Starter ASP.NET Core Web API minimal.",
+      "source": "templates/dotnet-webapi",
+      "runtime": "dotnet",
+      "install_command": "dotnet restore",
+      "devcontainer_image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm"
+    },
+    "python-api": {
+      "name": "Python API",
+      "description": "Starter FastAPI com endpoint de health check.",
+      "source": "templates/python-api",
+      "runtime": "python",
+      "install_command": "python -m pip install -r requirements.txt",
+      "devcontainer_image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"
+    },
+    "docker-compose": {
+      "name": "Docker Compose",
+      "description": "Projeto base com aplicação Nginx e healthcheck.",
+      "source": "templates/docker-compose",
+      "runtime": "docker",
+      "install_command": "",
+      "devcontainer_image": "mcr.microsoft.com/devcontainers/base:ubuntu"
+    }
+  }
+}

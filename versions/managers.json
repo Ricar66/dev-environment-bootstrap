@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "runtimes": {
+    "node": {
+      "display_name": "Node.js",
+      "managers": ["fnm", "nvm"],
+      "fallback": "native"
+    },
+    "python": {
+      "display_name": "Python",
+      "managers": ["pyenv"],
+      "fallback": "native"
+    },
+    "dotnet": {
+      "display_name": ".NET SDK",
+      "managers": ["dotnet-install"],
+      "fallback": "native"
+    },
+    "java": {
+      "display_name": "Java",
+      "managers": ["sdkman"],
+      "fallback": "native"
+    },
+    "php": {
+      "display_name": "PHP",
+      "managers": ["phpenv"],
+      "fallback": "native"
+    }
+  }
+}

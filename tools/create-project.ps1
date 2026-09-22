@@ -29,7 +29,7 @@ function ConvertTo-ProjectSlug {
     $slug = $Value.Trim().ToLowerInvariant()
     $slug = [regex]::Replace($slug, '[^a-z0-9._-]+', '-')
     $slug = [regex]::Replace($slug, '-{2,}', '-')
-    $slug = $slug.Trim('-', '.', '_')
+    $slug = $slug.Trim([char[]]"-._")
 
     if (-not $slug) {
         throw "Não foi possível gerar um nome de projeto válido."
@@ -70,7 +70,7 @@ function Show-Templates {
 
     foreach ($property in ($catalog.templates.PSObject.Properties | Sort-Object Name)) {
         $item = $property.Value
-        Write-Host "$($property.Name) — $($item.name)"
+        Write-Host "$($property.Name) - $($item.name)"
         Write-Host "  $($item.description)"
         Write-Host ""
     }

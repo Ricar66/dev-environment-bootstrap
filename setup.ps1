@@ -24,6 +24,7 @@ $runtimeChecker = Join-Path $root "tools\check-runtime-versions.ps1"
 $projectWizard = Join-Path $root "tools\project-wizard.ps1"
 $createProject = Join-Path $root "tools\create-project.ps1"
 $runtimeManager = Join-Path $root "tools\runtime-manager.ps1"
+$devkitCli = Join-Path $root "tools\devkit.ps1"
 $configExample = Join-Path $root "config\devkit.config.example.json"
 $configLocal = Join-Path $root "config\devkit.config.json"
 $versionFile = Join-Path $root "VERSION"
@@ -212,6 +213,7 @@ function Show-Menu {
     Write-Host "20. Mostrar exemplos Docker"
     Write-Host "21. Ambientes reproduzíveis / lock file"
     Write-Host "22. Project templates / version managers"
+    Write-Host "23. Instalar comando global devkit"
     Write-Host "0.  Sair"
     Write-Host ""
 }
@@ -347,6 +349,10 @@ while ($true) {
         }
         "22" {
             Show-ProjectToolsMenu
+        }
+        "23" {
+            & $devkitCli cli install
+            Pause-Menu
         }
         "0" {
             return

@@ -6,35 +6,45 @@ O Super Dev Kit será evoluído em etapas para continuar simples de usar e fáci
 
 - [x] Setup Windows com winget
 - [x] Setup Ubuntu / VirtualBox
-- [x] Git e Node.js LTS
+- [x] Git e Node.js
 - [x] Docker e Docker Compose
 - [x] SSH e utilitários de rede
-- [x] Documentação para certificados corporativos
 - [x] Dev Doctor para Windows e Linux
 - [x] GitHub Actions para lint
-- [x] Templates de Issues
+- [x] Templates de Issues e Pull Request
 
-## v1.1 — Perfis de desenvolvimento
+## v1.1 — Perfis e experiência
 
-- [ ] Perfil Front-end
-- [ ] Perfil Back-end
-- [ ] Perfil Full Stack
-- [ ] Perfil Data / SQL
-- [ ] Instalação opcional de bancos locais
+- [x] Perfil Essential
+- [x] Perfil Frontend
+- [x] Perfil Backend
+- [x] Perfil Full Stack
+- [x] Perfil Data / SQL
+- [x] Perfil DevOps
+- [x] Menu interativo no Windows
+- [x] Menu interativo no Linux
+- [x] Exemplos Docker para Nginx, MySQL e PostgreSQL
+- [x] Exportador de CA confiável no Windows
+- [x] Importador de CA no Linux com auto-descoberta
+- [x] Certificados locais ignorados pelo Git
 - [ ] Configuração opcional de extensões do VS Code
 
-## v1.2 — Experiência
+## v1.2 — Automação avançada
 
-- [ ] Logs estruturados
-- [ ] Modo não interativo completo
 - [ ] Dry-run
-- [ ] Arquivo de configuração para seleção de ferramentas
-- [ ] Melhor detecção de proxy corporativo
+- [ ] Modo não interativo completo
+- [ ] Arquivo declarativo de configuração
+- [ ] Auto-update do Super Dev Kit
+- [ ] Backup/exportação das ferramentas e versões
+- [ ] Cleanup/uninstall controlado
+- [ ] Melhor diagnóstico de proxy
+- [ ] Testes de instalação em VMs descartáveis
 
 ## Futuro
 
 - [ ] macOS
 - [ ] Fedora
-- [ ] Debian
-- [ ] testes automatizados em VMs descartáveis
+- [ ] Debian dedicado
+- [ ] releases versionadas
 - [ ] releases assinadas
+- [ ] catálogo de templates de projetos

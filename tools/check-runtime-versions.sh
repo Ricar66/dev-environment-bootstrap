@@ -152,8 +152,9 @@ matches_constraint() {
     return
   fi
 
-  if [[ "$constraint" =~ ^>=(.+)$ ]]; then
-    version_ge "$actual" "${BASH_REMATCH[1]}"
+  if [[ "$constraint" == ">="* ]]; then
+    local target="${constraint#>=}"
+    version_ge "$actual" "$target"
     return
   fi
 

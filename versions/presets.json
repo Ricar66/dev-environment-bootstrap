@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "presets": {
+    "portable": {
+      "description": "Baseline conservadora para projetos modernos.",
+      "runtime_versions": {
+        "node": ">=20",
+        "python": ">=3.11",
+        "dotnet": ">=8",
+        "java": ">=17",
+        "php": ">=8.2"
+      }
+    },
+    "modern": {
+      "description": "Baseline mais recente, sem fixar patch versions.",
+      "runtime_versions": {
+        "node": ">=22",
+        "python": ">=3.12",
+        "dotnet": ">=9",
+        "java": ">=21",
+        "php": ">=8.3"
+      }
+    }
+  }
+}

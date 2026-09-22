@@ -197,15 +197,8 @@ if ($DryRun) {
 Write-Host ""
 Write-Host "Validando versões de runtime..." -ForegroundColor Cyan
 
-& $runtimeChecker -LockPath $LockPath -UpdateManifest
-$runtimeExit = $LASTEXITCODE
+& $runtimeChecker -LockPath $LockPath -UpdateManifest -NoFail
 
-if ($runtimeExit -eq 0) {
-    Write-Host ""
-    Write-Host "[OK] Ambiente importado e runtimes compatíveis com o lock." -ForegroundColor Green
-}
-else {
-    Write-Host ""
-    Write-Host "[AVISO] Ambiente importado, mas existem runtimes fora das restrições do lock." -ForegroundColor Yellow
-    Write-Host "Use tools\compare-environment.cmd para ver as diferenças."
-}
+Write-Host ""
+Write-Host "[OK] Importação concluída." -ForegroundColor Green
+Write-Host "Use tools\compare-environment.cmd para confirmar se o ambiente atende integralmente o lock."

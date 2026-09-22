@@ -45,46 +45,43 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 
 ## v0.5 — Developer Experience e módulos
 
-- [x] Arquitetura modular por ferramentas
+- [x] Arquitetura modular
 - [x] Catálogo de stacks
-- [x] React
-- [x] Node / NestJS
-- [x] Full Stack React + Node
-- [x] .NET
-- [x] Python
-- [x] Java
-- [x] PHP
-- [x] Data / SQL
-- [x] DevOps
+- [x] React, Node/NestJS, Full Stack, .NET, Python, Java, PHP, Data/SQL e DevOps
 - [x] Stack Wizard
 - [x] Dev Doctor v2 com score
 - [x] Detecção de drift
-- [x] Presets reutilizáveis em JSON
-- [x] Documentação para criação de módulos
+- [x] Presets reutilizáveis
 - [x] CI validando stacks e módulos
 
 ## v0.6 — Versões e ambientes reproduzíveis
 
-- [ ] Gerenciamento de versões de runtimes
-- [ ] Node LTS selecionável
-- [ ] Python selecionável
-- [ ] .NET SDK selecionável
-- [ ] Java selecionável
-- [ ] PHP selecionável
-- [ ] arquivo lock do ambiente
-- [ ] export/import entre máquinas
-- [ ] validação de compatibilidade por sistema operacional
-- [ ] cache/download resiliente
-- [ ] presets de versões estáveis
+- [x] Manifesto schema v2
+- [x] Registro de stacks e módulos
+- [x] Registro de runtimes
+- [x] Constraints selecionáveis de runtime
+- [x] Node.js, Python, .NET, Java e PHP
+- [x] Presets de compatibilidade
+- [x] Lock file portável
+- [x] Export de ambiente
+- [x] Import de ambiente
+- [x] Dry-run de importação
+- [x] Comparação lock x máquina
+- [x] Drift de pacotes/extensões/runtimes
+- [x] CMD + PowerShell + Bash
+- [x] CI para os fluxos de reprodutibilidade
 
-## v0.7 — Templates de projetos
+## v0.7 — Templates e version managers
 
+- [ ] adapters opcionais para version managers
+- [ ] pinning mais forte de runtimes quando suportado
 - [ ] React/Vite
 - [ ] Node/NestJS
 - [ ] .NET Web API
 - [ ] Python API
 - [ ] Docker Compose
 - [ ] Dev Containers
+- [ ] cache/download resiliente
 
 ## v0.8 — CLI unificada
 
@@ -92,7 +89,8 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [ ] `devkit doctor`
 - [ ] `devkit stack`
 - [ ] `devkit state`
-- [ ] `devkit backup`
+- [ ] `devkit export`
+- [ ] `devkit import`
 - [ ] `devkit update`
 
 ## v0.9 — Preparação pública

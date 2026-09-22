@@ -1,6 +1,6 @@
-# CLI unificada — v0.8
+# CLI unificada — v1
 
-A v0.8 adiciona uma interface única para os recursos que já existiam no Super Dev Kit.
+Na linha v1, `devkit` é a interface pública principal do Super Dev Kit.
 
 A CLI **não reimplementa** instaladores, stacks, templates ou diagnósticos. Ela funciona como uma camada de orquestração sobre os scripts já testados.
 
@@ -230,6 +230,12 @@ Exemplo de envelope:
 Para scripts legados que ainda produzem texto, a CLI preserva a saída dentro do campo output.
 
 Assim a v0.8 adiciona automação sem obrigar a reescrever de uma vez toda a base já validada.
+
+## Contrato estável da v1
+
+Na linha v1, nomes dos comandos principais, códigos documentados e o envelope JSON schema_version 1 são tratados como contrato público. Mudanças incompatíveis exigem nova versão MAJOR.
+
+Veja [VERSIONING.md](VERSIONING.md).
 
 ## Códigos de saída
 

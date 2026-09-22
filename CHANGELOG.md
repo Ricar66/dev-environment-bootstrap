@@ -2,6 +2,37 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 1.0.0 - 2026-09-22
+
+### Estável
+
+- primeira versão estável do Super Dev Kit;
+- README final orientado a usuários;
+- Manual do Usuário completo;
+- política de Semantic Versioning;
+- processo de release documentado;
+- matriz de suporte v1 consolidada;
+- contratos públicos da CLI documentados;
+- threat model e política de segurança revisados;
+- Quick Start atualizado para a linha v1;
+- release notes v1.0.0 preparadas.
+
+### Contratos públicos
+
+A linha v1 passa a tratar como contratos públicos os comandos principais da CLI, códigos de saída documentados, envelope JSON schema v1, manifesto schema v2 e formato de lock file usado pelos fluxos de reprodução.
+
+### Compatibilidade
+
+- Windows 10/11;
+- CMD;
+- Windows PowerShell 5.1;
+- PowerShell 7;
+- Ubuntu 24.04;
+- Ubuntu 22.04 em modo compatível;
+- VirtualBox + Ubuntu;
+- WSL 2 com suporte parcial.
+
+
 ## 0.9.0 - 2026-09-22
 
 ### Public readiness

@@ -2,7 +2,7 @@
 
 Este é o fluxo recomendado para preparar uma máquina nova com o Super Dev Kit.
 
-A partir da v0.8, a forma mais simples de usar o projeto é pela CLI unificada \`devkit\`. Os menus e scripts antigos continuam disponíveis.
+Na v1.0, a forma recomendada de usar o projeto é pela CLI unificada `devkit`. Os menus e scripts antigos continuam disponíveis.
 
 ## 1. Instale o Git
 
@@ -312,7 +312,7 @@ O updater continua recusando atualizar o clone quando existem alterações locai
 
 ## 14. Saída JSON
 
-A CLI v0.8 possui uma saída estruturada para automações:
+A CLI v1 possui uma saída estruturada para automações:
 
 ~~~text
 devkit version --json
@@ -345,7 +345,11 @@ setup.cmd
 bash setup.sh
 ~~~
 
-Nenhum fluxo legado foi removido na v0.8.
+Os fluxos legados continuam disponíveis na v1.
+
+## Manual completo
+
+Para o passo a passo detalhado de uso diário, consulte [USER-MANUAL.md](USER-MANUAL.md).
 
 ## Próximo passo
 

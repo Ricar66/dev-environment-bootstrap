@@ -2,6 +2,29 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.5.0 - 2026-09-22
+
+### Adicionado
+
+- arquitetura modular centralizada em `modules/catalog.json`;
+- catálogo de stacks reutilizáveis em `stacks/`;
+- Stack Wizard para CMD, PowerShell e Bash;
+- presets React, Node/NestJS, Full Stack React + Node, Python, .NET, Java, PHP, Data/SQL e DevOps;
+- resolução automática de dependências entre módulos;
+- instalação direta de stacks com dry-run;
+- Dev Doctor v2 com score, categorias, sugestões e detecção de drift;
+- documentação dedicada para módulos, stacks e Dev Doctor;
+- validação CI dos manifests JSON e dry-runs de stacks;
+- suporte a extensões VS Code adicionais por stack.
+
+### Developer Experience
+
+- o menu principal prioriza o Stack Wizard;
+- stacks reutilizam os instaladores e o manifesto existentes;
+- módulos removem duplicação de listas de dependências;
+- CMD, PowerShell e Bash continuam suportados como caminhos de primeira classe.
+
+
 ## 0.4.0 - 2026-09-22
 
 ### Adicionado

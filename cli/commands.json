@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "name": "Super Dev Kit CLI",
+  "binary": "devkit",
+  "exit_codes": {
+    "0": "sucesso",
+    "1": "falha operacional da ferramenta delegada",
+    "2": "diferença de ambiente, drift ou política não atendida",
+    "64": "uso inválido da CLI",
+    "69": "dependência ou recurso indisponível",
+    "70": "erro interno da CLI"
+  },
+  "commands": {
+    "setup": "Prepara a máquina por perfil.",
+    "doctor": "Executa o Dev Doctor.",
+    "stack": "Instala uma stack do catálogo.",
+    "project": "Lista ou gera um projeto a partir de template.",
+    "runtime": "Lista ou usa adapters de version manager.",
+    "state": "Mostra o manifesto local.",
+    "export": "Exporta o ambiente para lock file.",
+    "import": "Importa um ambiente de lock file.",
+    "compare": "Compara lock file com a máquina.",
+    "backup": "Cria backup de VS Code ou Git.",
+    "inventory": "Gera inventário do ambiente.",
+    "cleanup": "Mostra ou aplica cleanup controlado.",
+    "update": "Atualiza o Super Dev Kit com fast-forward.",
+    "version": "Mostra a versão do Super Dev Kit.",
+    "commands": "Lista os comandos disponíveis.",
+    "cli": "Instala, remove ou consulta o shim global da CLI."
+  }
+}

@@ -83,6 +83,33 @@ else:
 PY
 }
 
+read_json_array() {
+  local expression="$1"
+  python3 - "$CONFIG_PATH" "$expression" <<'PY'
+import json
+import sys
+
+path, expression = sys.argv[1], sys.argv[2]
+
+with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+value = data
+for part in expression.split("."):
+    if not part:
+        continue
+    if not isinstance(value, dict) or part not in value:
+        value = []
+        break
+    value = value[part]
+
+if isinstance(value, list):
+    for item in value:
+        if item is not None and str(item).strip():
+            print(str(item))
+PY
+}
+
 PROFILE="$(read_json profile)"
 PROFILE="${PROFILE:-essential}"
 INSTALL_EXTENSIONS="$(read_json install_vscode_extensions)"
@@ -91,6 +118,11 @@ CA_AUTO="$(read_json certificate.auto)"
 CA_PATH="$(read_json certificate.path)"
 GIT_NAME="$(read_json git.name)"
 GIT_EMAIL="$(read_json git.email)"
+PROXY_HTTP="$(read_json proxy.http)"
+PROXY_HTTPS="$(read_json proxy.https)"
+PROXY_NO_PROXY="$(read_json proxy.no_proxy)"
+mapfile -t CUSTOM_LINUX_PACKAGES < <(read_json_array custom.linux_packages)
+mapfile -t CUSTOM_EXTENSIONS < <(read_json_array custom.vscode_extensions)
 
 PROFILE="${PROFILE,,}"
 
@@ -103,6 +135,10 @@ case "$PROFILE" in
 esac
 
 installer_args=(--profile "$PROFILE")
+
+for pkg in "${CUSTOM_LINUX_PACKAGES[@]}"; do
+  installer_args+=(--package "$pkg")
+done
 
 if [[ "$CA_AUTO" == "true" ]]; then
   installer_args+=(--auto-ca)
@@ -125,6 +161,14 @@ echo "Configuração: $CONFIG_PATH"
 echo "Perfil: $PROFILE"
 echo
 
+OLD_HTTP_PROXY="${HTTP_PROXY-}"
+OLD_HTTPS_PROXY="${HTTPS_PROXY-}"
+OLD_NO_PROXY="${NO_PROXY-}"
+
+[[ -n "$PROXY_HTTP" ]] && export HTTP_PROXY="$PROXY_HTTP"
+[[ -n "$PROXY_HTTPS" ]] && export HTTPS_PROXY="$PROXY_HTTPS"
+[[ -n "$PROXY_NO_PROXY" ]] && export NO_PROXY="$PROXY_NO_PROXY"
+
 if [[ "$DRY_RUN" -eq 1 ]]; then
   bash "$ROOT_DIR/linux/bootstrap-vm-ubuntu.sh" "${installer_args[@]}"
 else
@@ -145,7 +189,16 @@ fi
 
 if [[ "$INSTALL_EXTENSIONS" == "true" ]]; then
   ext_args=(--profile "$PROFILE")
+
+  for extension in "${CUSTOM_EXTENSIONS[@]}"; do
+    ext_args+=(--extension "$extension")
+  done
+
   [[ "$DRY_RUN" -eq 1 ]] && ext_args+=(--dry-run)
 
   bash "$ROOT_DIR/tools/install-vscode-extensions.sh" "${ext_args[@]}"
 fi
+
+if [[ -n "$OLD_HTTP_PROXY" ]]; then export HTTP_PROXY="$OLD_HTTP_PROXY"; else unset HTTP_PROXY || true; fi
+if [[ -n "$OLD_HTTPS_PROXY" ]]; then export HTTPS_PROXY="$OLD_HTTPS_PROXY"; else unset HTTPS_PROXY || true; fi
+if [[ -n "$OLD_NO_PROXY" ]]; then export NO_PROXY="$OLD_NO_PROXY"; else unset NO_PROXY || true; fi

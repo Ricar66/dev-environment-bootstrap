@@ -134,6 +134,10 @@ jobs:
           bash devkit.sh commands --json > /tmp/devkit-commands.json
           python3 -m json.tool /tmp/devkit-commands.json > /dev/null
 
+          bash devkit.sh stack react --dry-run --json > /tmp/devkit-stack.json
+          python3 -m json.tool /tmp/devkit-stack.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-stack.json"))["command"])')" = "stack"
+
           set +e
           bash devkit.sh project --json > /tmp/devkit-invalid.json
           code=$?
@@ -145,7 +149,7 @@ jobs:
           bash devkit.sh cli install
           "$HOME/.local/bin/devkit" version
           "$HOME/.local/bin/devkit" cli status
-          bash devkit.sh cli uninstall
+          "$HOME/.local/bin/devkit" cli uninstall
           test ! -e "$HOME/.local/bin/devkit"
 
       - name: Linux project templates smoke test
@@ -312,6 +316,7 @@ jobs:
       - name: Windows unified CLI smoke test
         shell: powershell
         run: |
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\devkit.ps1 version
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 version
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 commands
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 setup fullstack --dry-run
@@ -328,6 +333,10 @@ jobs:
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 commands --json | Set-Content .\devkit-commands.json -Encoding UTF8
           Get-Content .\devkit-commands.json -Raw | ConvertFrom-Json | Out-Null
 
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 stack react --dry-run --json | Set-Content .\devkit-stack.json -Encoding UTF8
+          $stackJson = Get-Content .\devkit-stack.json -Raw | ConvertFrom-Json
+          if ($stackJson.command -ne "stack") { throw "JSON delegado da stack inválido" }
+
           $process = Start-Process powershell.exe -ArgumentList @(
             "-NoLogo","-NoProfile","-ExecutionPolicy","Bypass",
             "-File",".\tools\devkit.ps1","project","--json"
@@ -341,8 +350,8 @@ jobs:
           if (-not (Test-Path $shim)) { throw "Shim global não foi criado" }
           & $shim version
           & $shim cli status
-          .\tools\uninstall-cli.ps1
-          if (Test-Path $shim) { throw "Shim global não foi removido" }
+          & $shim cli uninstall
+          if (Test-Path $shim) { throw "Shim global não foi removido pelo próprio comando global" }
 
       - name: Windows project templates smoke test
         shell: powershell

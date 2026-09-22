@@ -16,6 +16,10 @@ RESTORE_VSCODE="$ROOT_DIR/tools/restore-vscode.sh"
 BACKUP_GIT="$ROOT_DIR/tools/backup-git.sh"
 RESTORE_GIT="$ROOT_DIR/tools/restore-git.sh"
 STACK_WIZARD="$ROOT_DIR/tools/stack-wizard.sh"
+EXPORT_ENVIRONMENT="$ROOT_DIR/tools/export-environment.sh"
+IMPORT_ENVIRONMENT="$ROOT_DIR/tools/import-environment.sh"
+COMPARE_ENVIRONMENT="$ROOT_DIR/tools/compare-environment.sh"
+RUNTIME_CHECKER="$ROOT_DIR/tools/check-runtime-versions.sh"
 CONFIG_EXAMPLE="$ROOT_DIR/config/devkit.config.example.json"
 CONFIG_LOCAL="$ROOT_DIR/config/devkit.config.json"
 VERSION_FILE="$ROOT_DIR/VERSION"
@@ -49,6 +53,71 @@ pause_menu() {
   read -r -p "Pressione Enter para voltar..." _
 }
 
+show_reproducibility_menu() {
+  while true; do
+    clear || true
+    cat <<MENU
+====================================================
+        AMBIENTES REPRODUZÍVEIS - v0.6
+====================================================
+
+1. Exportar ambiente para lock file
+2. Dry-run de importação
+3. Importar ambiente do lock
+4. Comparar lock x máquina
+5. Validar runtimes do config local
+6. Validar preset portable
+7. Validar preset modern
+0. Voltar
+
+MENU
+
+    read -r -p "Escolha uma opção: " sub_choice
+
+    case "$sub_choice" in
+      1)
+        bash "$EXPORT_ENVIRONMENT"
+        pause_menu
+        ;;
+      2)
+        bash "$IMPORT_ENVIRONMENT" --dry-run
+        pause_menu
+        ;;
+      3)
+        bash "$IMPORT_ENVIRONMENT"
+        pause_menu
+        ;;
+      4)
+        bash "$COMPARE_ENVIRONMENT"
+        pause_menu
+        ;;
+      5)
+        if [[ -f "$CONFIG_LOCAL" ]]; then
+          bash "$RUNTIME_CHECKER" --config "$CONFIG_LOCAL" --update-manifest --no-fail
+        else
+          echo "Configuração local não encontrada. Use a opção 18 do menu principal."
+        fi
+        pause_menu
+        ;;
+      6)
+        bash "$RUNTIME_CHECKER" --preset portable --update-manifest --no-fail
+        pause_menu
+        ;;
+      7)
+        bash "$RUNTIME_CHECKER" --preset modern --update-manifest --no-fail
+        pause_menu
+        ;;
+      0)
+        return
+        ;;
+      *)
+        echo "Opção inválida."
+        sleep 1
+        ;;
+    esac
+  done
+}
+
 show_menu() {
   clear || true
   cat <<MENU
@@ -75,6 +144,7 @@ show_menu() {
 17. Importar certificado CA (opcional)
 18. Criar configuração local a partir do exemplo
 19. Mostrar exemplos Docker
+20. Ambientes reproduzíveis / lock file
 0.  Sair
 
 MENU
@@ -187,6 +257,9 @@ while true; do
     19)
       cat "$ROOT_DIR/examples/README.md"
       pause_menu
+      ;;
+    20)
+      show_reproducibility_menu
       ;;
     0)
       exit 0

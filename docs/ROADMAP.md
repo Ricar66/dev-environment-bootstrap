@@ -1,6 +1,6 @@
 # Roadmap
 
-O Super Dev Kit evolui em versões pequenas para manter a instalação previsível e fácil de testar.
+O Super Dev Kit evolui em versões pequenas para manter a instalação previsível, segura e fácil de testar.
 
 ## v0.1 — Base
 
@@ -38,36 +38,64 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [x] Extensões VS Code por perfil
 - [x] Auto-update seguro
 - [x] Inventário/exportação do ambiente
-- [x] Cleanup/uninstall controlado
-- [x] Pasta local de relatórios ignorada pelo Git
-- [x] Central de operações no menu Windows
-- [x] Central de operações no menu Linux
-- [x] Smoke tests em runners descartáveis do GitHub Actions
-- [ ] Registro local de estado dos pacotes instalados pelo kit
+- [x] Central de operações no Windows e Linux
+- [x] Compatibilidade CMD + PowerShell + Bash
+- [x] Smoke tests em runners descartáveis
 
 ## v0.4 — Estado e reprodutibilidade
 
-- [ ] Manifesto de instalação por máquina
-- [ ] Registrar o que foi instalado pelo kit
-- [ ] Cleanup baseado em manifesto
-- [ ] Backup/restauração da configuração do VS Code
-- [ ] Exportação/importação de configuração Git
-- [ ] Perfis customizados pelo usuário
-- [ ] Melhor suporte a proxy autenticado
-- [ ] Logs estruturados em JSON
+- [x] Manifesto de instalação por máquina
+- [x] Registrar o que foi instalado pelo kit
+- [x] Registrar itens preexistentes
+- [x] Cleanup baseado em manifesto
+- [x] Backup/restauração da configuração do VS Code
+- [x] Exportação/importação de configuração Git segura
+- [x] Pacotes e extensões customizados
+- [x] Variáveis de proxy por configuração
+- [x] Logs estruturados em JSON Lines
+- [x] Estado, backups e logs protegidos pelo .gitignore
+- [x] Testes automatizados do manifesto
+
+## v0.5 — Developer Experience e módulos
+
+- [ ] Arquitetura modular por ferramentas
+- [ ] Catálogo de stacks
+- [ ] React / Node / NestJS
+- [ ] .NET
+- [ ] Python
+- [ ] Java
+- [ ] PHP
+- [ ] Data / SQL
+- [ ] DevOps
+- [ ] Dev Doctor com pontuação e checks por categoria
+- [ ] Wizard de seleção de stack
+- [ ] Presets reutilizáveis em JSON
+- [ ] Documentação para criação de novos módulos
+- [ ] Melhor experiência de erros e resumo final
+
+## v0.6 — Versões e ambientes
+
+- [ ] Gerenciamento de versões de runtimes
+- [ ] Node LTS selecionável
+- [ ] Python selecionável
+- [ ] .NET SDK selecionável
+- [ ] Java selecionável
+- [ ] export/import de ambiente entre máquinas
 
 ## v1.0 — Estável
 
 - [ ] Testes de instalação end-to-end em Windows e Ubuntu
 - [ ] Releases versionadas e assinadas
 - [ ] Compatibilidade documentada por versão de SO
-- [ ] Guia de contribuição para novos perfis
+- [ ] Guia completo de contribuição
 - [ ] Política de compatibilidade e breaking changes
+- [ ] Site/documentação pública
 
 ## Futuro
 
 - [ ] macOS
 - [ ] Fedora
 - [ ] Debian dedicado
+- [ ] CLI unificada
 - [ ] catálogo de templates de projetos
 - [ ] plugins/extensões do próprio Super Dev Kit

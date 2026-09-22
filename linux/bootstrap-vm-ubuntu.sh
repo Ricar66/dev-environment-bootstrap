@@ -4,14 +4,11 @@ set -Eeuo pipefail
 # ============================================================
 # Super Dev Kit - Ubuntu bootstrap
 #
-# Uso:
-#   sudo bash linux/bootstrap-vm-ubuntu.sh
+# Exemplos:
 #   sudo bash linux/bootstrap-vm-ubuntu.sh --profile fullstack
-#   sudo bash linux/bootstrap-vm-ubuntu.sh --profile datasql --ca /caminho/ca.cer
-#   sudo bash linux/bootstrap-vm-ubuntu.sh --auto-ca
-#
-# Compatibilidade:
-#   sudo bash linux/bootstrap-vm-ubuntu.sh /caminho/ca.cer
+#   bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --dry-run
+#   sudo bash linux/bootstrap-vm-ubuntu.sh --profile datasql --package redis-tools
+#   sudo bash linux/bootstrap-vm-ubuntu.sh --auto-ca --yes
 # ============================================================
 
 ORIGINAL_USER="${SUDO_USER:-$USER}"
@@ -20,6 +17,7 @@ CA_FILE=""
 AUTO_CA=0
 DRY_RUN=0
 YES=0
+CUSTOM_PACKAGES=()
 
 usage() {
   cat <<'EOF'
@@ -30,8 +28,9 @@ Opções:
   --profile PERFIL   essential | frontend | backend | fullstack | datasql | devops
   --ca ARQUIVO       instala um certificado CA .cer/.crt
   --auto-ca          procura certificados em Downloads, /media e /mnt
+  --package PACOTE   adiciona um pacote apt customizado (pode repetir)
   --dry-run          mostra o plano sem alterar a máquina
-  --yes               modo não interativo para confirmações seguras
+  --yes              modo não interativo para confirmações suportadas
   -h, --help         mostra esta ajuda
 EOF
 }
@@ -49,6 +48,10 @@ while [[ $# -gt 0 ]]; do
     --auto-ca)
       AUTO_CA=1
       shift
+      ;;
+    --package)
+      CUSTOM_PACKAGES+=("${2:-}")
+      shift 2
       ;;
     --dry-run)
       DRY_RUN=1
@@ -103,6 +106,11 @@ fail() {
   exit 1
 }
 
+pkg_installed() {
+  local pkg="$1"
+  dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"
+}
+
 if [[ "$DRY_RUN" -ne 1 ]]; then
   [[ "${EUID}" -eq 0 ]] || fail "Execute com sudo: sudo bash $0"
 fi
@@ -112,6 +120,45 @@ command -v apt-get >/dev/null 2>&1 || fail "Este script requer apt (Ubuntu/Debia
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CA_HELPER="$REPO_ROOT/certificates/import-ca-linux.sh"
+STATE_HELPER="$REPO_ROOT/tools/state.sh"
+
+if [[ -f "$STATE_HELPER" ]]; then
+  # shellcheck source=/dev/null
+  source "$STATE_HELPER"
+fi
+
+install_apt_packages() {
+  local packages=("$@")
+  local pkg
+  declare -A preexisting=()
+
+  if [[ ${#packages[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  for pkg in "${packages[@]}"; do
+    [[ -n "$pkg" ]] || continue
+
+    if pkg_installed "$pkg"; then
+      preexisting["$pkg"]="true"
+    else
+      preexisting["$pkg"]="false"
+    fi
+  done
+
+  DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
+
+  for pkg in "${packages[@]}"; do
+    [[ -n "$pkg" ]] || continue
+
+    local present_after="false"
+    pkg_installed "$pkg" && present_after="true"
+
+    if declare -F state_register_package >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+      state_register_package         "$pkg"         "$pkg"         "apt"         "${preexisting[$pkg]:-false}"         "$present_after"
+    fi
+  done
+}
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "============================================================"
@@ -128,6 +175,7 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "  openssh-server docker.io"
   echo
   echo "Pacotes do perfil:"
+
   case "$PROFILE" in
     essential|devops)
       echo "  (nenhum adicional)"
@@ -142,8 +190,16 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
       echo "  python3 python3-pip python3-venv sqlite3 postgresql-client default-mysql-client"
       ;;
   esac
+
+  if [[ ${#CUSTOM_PACKAGES[@]} -gt 0 ]]; then
+    echo
+    echo "Pacotes customizados:"
+    printf '  %s\n' "${CUSTOM_PACKAGES[@]}"
+  fi
+
   echo
   echo "Outras ações planejadas:"
+  echo "  - registrar estado local no manifesto .super-dev-kit/manifest.json"
   echo "  - habilitar SSH"
   echo "  - instalar/validar Docker Compose"
   echo "  - adicionar usuário ao grupo docker"
@@ -181,10 +237,13 @@ log "[3/11] Atualizando repositórios"
 apt-get update
 
 log "[4/11] Instalando ferramentas essenciais"
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  ca-certificates curl wget git unzip zip nano vim htop tree jq \
-  openssl gnupg lsb-release software-properties-common \
-  net-tools iproute2 iputils-ping dnsutils traceroute build-essential
+install_apt_packages   ca-certificates curl wget git unzip zip nano vim htop tree jq   openssl gnupg lsb-release software-properties-common   net-tools iproute2 iputils-ping dnsutils traceroute build-essential
+
+if declare -F ensure_state >/dev/null 2>&1; then
+  ensure_state || true
+  state_add_profile "$PROFILE" || true
+  log_event "info" "setup_started" "profile=$PROFILE" || true
+fi
 
 log "[5/11] Instalando ferramentas do perfil: $PROFILE"
 
@@ -193,25 +252,27 @@ case "$PROFILE" in
     echo "Nenhum pacote adicional necessário para este perfil."
     ;;
   frontend)
-    DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs npm
+    install_apt_packages nodejs npm
     ;;
-  backend)
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      nodejs npm python3 python3-pip python3-venv sqlite3
-    ;;
-  fullstack)
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      nodejs npm python3 python3-pip python3-venv sqlite3
+  backend|fullstack)
+    install_apt_packages nodejs npm python3 python3-pip python3-venv sqlite3
     ;;
   datasql)
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      python3 python3-pip python3-venv sqlite3 \
-      postgresql-client default-mysql-client
+    install_apt_packages       python3 python3-pip python3-venv sqlite3       postgresql-client default-mysql-client
     ;;
 esac
 
+if [[ ${#CUSTOM_PACKAGES[@]} -gt 0 ]]; then
+  log "Pacotes customizados"
+  install_apt_packages "${CUSTOM_PACKAGES[@]}"
+fi
+
 log "[6/11] Certificados"
 update-ca-certificates
+
+CA_DEST="/usr/local/share/ca-certificates/super-dev-kit-local-ca.crt"
+CA_PREEXISTING="false"
+[[ -f "$CA_DEST" ]] && CA_PREEXISTING="true"
 
 if [[ "$AUTO_CA" -eq 1 ]]; then
   if [[ -f "$CA_HELPER" ]]; then
@@ -240,46 +301,65 @@ elif [[ -n "$CA_FILE" ]]; then
   echo "Certificado selecionado:"
   openssl x509 -in "$TMP_PEM" -noout -subject -issuer -fingerprint -sha256
 
-  DEST_CA="/usr/local/share/ca-certificates/super-dev-kit-local-ca.crt"
-  install -m 0644 "$TMP_PEM" "$DEST_CA"
+  install -m 0644 "$TMP_PEM" "$CA_DEST"
   update-ca-certificates
-  echo "CA adicionada em: $DEST_CA"
+  echo "CA adicionada em: $CA_DEST"
 else
   echo "Nenhum certificado CA adicional informado."
   echo "Isso é normal para a maioria das redes."
 fi
 
+if declare -F state_register_feature >/dev/null 2>&1; then
+  CA_PRESENT="false"
+  [[ -f "$CA_DEST" ]] && CA_PRESENT="true"
+  state_register_feature "corporate_ca" "$CA_PREEXISTING" "$CA_PRESENT" || true
+fi
+
 log "[7/11] SSH"
-DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
+install_apt_packages openssh-server
 systemctl enable --now ssh
 
 log "[8/11] Docker"
-DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io
+install_apt_packages docker.io
 systemctl enable --now docker
 
-# Evita conflito entre docker-compose-v2 (Ubuntu) e docker-compose-plugin
-# (repositório oficial da Docker).
 if docker compose version >/dev/null 2>&1; then
   echo "Docker Compose já está disponível; mantendo a implementação instalada."
-elif dpkg-query -W -f='${Status}' docker-compose-plugin 2>/dev/null | grep -q "install ok installed"; then
+elif pkg_installed docker-compose-plugin; then
   echo "docker-compose-plugin já está instalado; não instalando docker-compose-v2."
-elif dpkg-query -W -f='${Status}' docker-compose-v2 2>/dev/null | grep -q "install ok installed"; then
+  if declare -F state_register_package >/dev/null 2>&1; then
+    state_register_package "docker-compose-plugin" "docker-compose-plugin" "apt" "true" "true" || true
+  fi
+elif pkg_installed docker-compose-v2; then
   echo "docker-compose-v2 já está instalado."
+  if declare -F state_register_package >/dev/null 2>&1; then
+    state_register_package "docker-compose-v2" "docker-compose-v2" "apt" "true" "true" || true
+  fi
 elif apt-cache show docker-compose-v2 >/dev/null 2>&1; then
-  DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-v2
+  install_apt_packages docker-compose-v2
 elif apt-cache show docker-compose-plugin >/dev/null 2>&1; then
-  DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-plugin
+  install_apt_packages docker-compose-plugin
 elif apt-cache show docker-compose >/dev/null 2>&1; then
-  DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose
+  install_apt_packages docker-compose
 else
   echo "AVISO: nenhum pacote Docker Compose compatível foi encontrado."
 fi
 
 log "[9/11] Permissões e VirtualBox"
 
+DOCKER_GROUP_PREEXISTING="false"
+
+if id -nG "$ORIGINAL_USER" 2>/dev/null | grep -qw docker; then
+  DOCKER_GROUP_PREEXISTING="true"
+fi
+
 if id "$ORIGINAL_USER" >/dev/null 2>&1 && getent group docker >/dev/null 2>&1; then
   usermod -aG docker "$ORIGINAL_USER"
   echo "Usuário '$ORIGINAL_USER' adicionado ao grupo docker."
+fi
+
+if declare -F state_register_feature >/dev/null 2>&1; then
+  state_register_feature "docker_group" "$DOCKER_GROUP_PREEXISTING" "true" || true
 fi
 
 VIRT="$(systemd-detect-virt 2>/dev/null || true)"
@@ -288,18 +368,25 @@ if [[ "$VIRT" == "oracle" ]] || grep -qi "VirtualBox" /sys/class/dmi/id/product_
   echo "VirtualBox detectado."
 
   if apt-cache show virtualbox-guest-utils >/dev/null 2>&1; then
-    DEBIAN_FRONTEND=noninteractive apt-get install -y virtualbox-guest-utils
+    install_apt_packages virtualbox-guest-utils
   fi
 
   if systemctl get-default 2>/dev/null | grep -q graphical; then
     if apt-cache show virtualbox-guest-x11 >/dev/null 2>&1; then
-      DEBIAN_FRONTEND=noninteractive apt-get install -y virtualbox-guest-x11
+      install_apt_packages virtualbox-guest-x11
     fi
   fi
+
+  VBOXSF_PREEXISTING="false"
+  id -nG "$ORIGINAL_USER" 2>/dev/null | grep -qw vboxsf && VBOXSF_PREEXISTING="true"
 
   if getent group vboxsf >/dev/null 2>&1 && id "$ORIGINAL_USER" >/dev/null 2>&1; then
     usermod -aG vboxsf "$ORIGINAL_USER"
     echo "Usuário '$ORIGINAL_USER' adicionado ao grupo vboxsf."
+
+    if declare -F state_register_feature >/dev/null 2>&1; then
+      state_register_feature "vboxsf_group" "$VBOXSF_PREEXISTING" "true" || true
+    fi
   fi
 else
   echo "VirtualBox não detectado; etapa ignorada."
@@ -333,8 +420,7 @@ esac
 echo
 echo "Teste HTTPS do Docker Hub:"
 set +e
-HTTP_CODE="$(curl -sS -o /tmp/docker-registry-response.txt -w "%{http_code}" \
-  https://registry-1.docker.io/v2/ 2>/tmp/docker-registry-error.txt)"
+HTTP_CODE="$(curl -sS -o /tmp/docker-registry-response.txt -w "%{http_code}"   https://registry-1.docker.io/v2/ 2>/tmp/docker-registry-error.txt)"
 CURL_RC=$?
 set -e
 
@@ -361,9 +447,14 @@ else
   echo "  docs/CERTIFICADOS-CORPORATIVOS.md"
 fi
 
+if declare -F log_event >/dev/null 2>&1; then
+  log_event "info" "setup_completed" "profile=$PROFILE" || true
+fi
+
 echo
 echo "Concluído."
 echo "Perfil instalado: $PROFILE"
+echo "Manifesto local: $REPO_ROOT/.super-dev-kit/manifest.json"
 echo
 echo "IMPORTANTE:"
 echo "Faça logout/login, execute 'newgrp docker' ou reinicie a VM"

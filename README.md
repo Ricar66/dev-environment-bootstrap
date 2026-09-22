@@ -86,9 +86,9 @@ O menu possui perfis para diferentes tipos de ambiente:
 
 Detalhes: [Perfis de desenvolvimento](docs/PROFILES.md)
 
-## ⚙️ Automação avançada v0.3
+## ⚙️ Automação avançada e estado local
 
-A v0.3 transforma o projeto em uma central de operações para o ambiente de desenvolvimento:
+As versões v0.3 e v0.4 transformaram o projeto em uma central de operações reproduzível para o ambiente de desenvolvimento:
 
 - dry-run antes de qualquer instalação;
 - configuração declarativa em JSON;
@@ -97,7 +97,12 @@ A v0.3 transforma o projeto em uma central de operações para o ambiente de des
 - inventário de ferramentas e versões;
 - cleanup/uninstall controlado;
 - relatórios locais ignorados pelo Git;
-- smoke tests em Windows e Linux via GitHub Actions.
+- smoke tests em Windows e Linux via GitHub Actions;
+- manifesto local do que foi instalado pelo kit;
+- cleanup baseado no manifesto;
+- backup/restore de VS Code e Git;
+- logs estruturados locais;
+- pacotes e extensões customizados.
 
 Exemplo de dry-run:
 
@@ -373,7 +378,7 @@ O Super Dev Kit busca ser:
 ## Documentação
 
 - [Quick Start](docs/QUICKSTART.md)
-- [Automação avançada v0.3](docs/AUTOMATION.md)
+- [Automação e estado local](docs/AUTOMATION.md)
 - [Perfis](docs/PROFILES.md)
 - [Windows](docs/WINDOWS.md)
 - [Ubuntu / VM](docs/UBUNTU-VM.md)

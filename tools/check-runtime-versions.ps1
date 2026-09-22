@@ -4,6 +4,7 @@
 param(
     [string]$ConfigPath = ".\config\devkit.config.json",
     [string]$Preset,
+    [string]$LockPath,
     [switch]$UpdateManifest
 )
 
@@ -81,7 +82,26 @@ function Test-VersionConstraint {
 $catalog = Get-Content $catalogPath -Raw | ConvertFrom-Json
 $desired = [ordered]@{}
 
-if ($Preset) {
+if ($LockPath) {
+    if (-not [System.IO.Path]::IsPathRooted($LockPath)) {
+        $LockPath = Join-Path $root $LockPath
+    }
+
+    if (-not (Test-Path $LockPath)) {
+        throw "Lock file não encontrado: $LockPath"
+    }
+
+    $lock = Get-Content $LockPath -Raw | ConvertFrom-Json
+
+    foreach ($property in $lock.runtime_versions.PSObject.Properties) {
+        $constraint = [string]$property.Value.constraint
+
+        if ($constraint) {
+            $desired[$property.Name] = $constraint
+        }
+    }
+}
+elseif ($Preset) {
     $presets = Get-Content $presetsPath -Raw | ConvertFrom-Json
     $presetData = $presets.presets.PSObject.Properties[$Preset].Value
 

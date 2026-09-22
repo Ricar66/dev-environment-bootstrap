@@ -130,7 +130,7 @@ while ($true) {
             }
             Pause-Menu
         }
-        "9" {
+        "7" {
             if (-not (Test-Path $configLocal)) {
                 Write-Host "Configuração local não encontrada." -ForegroundColor Yellow
                 Write-Host "Use a opção 19 primeiro."
@@ -140,7 +140,7 @@ while ($true) {
             }
             Pause-Menu
         }
-        "6" {
+        "8" {
             if (-not (Test-Path $configLocal)) {
                 Write-Host "Configuração local não encontrada." -ForegroundColor Yellow
             }
@@ -149,7 +149,7 @@ while ($true) {
             }
             Pause-Menu
         }
-        "7" {
+        "9" {
             & $doctor
             Pause-Menu
         }

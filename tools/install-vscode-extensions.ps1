@@ -10,7 +10,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
+$codeAvailable = [bool](Get-Command code -ErrorAction SilentlyContinue)
+
+if (-not $DryRun -and -not $codeAvailable) {
     Write-Host "VS Code CLI ('code') não encontrado no PATH." -ForegroundColor Yellow
     Write-Host "Abra o VS Code uma vez ou reabra o terminal após a instalação."
     exit 1
@@ -59,7 +61,11 @@ switch ($Profile) {
 }
 
 $extensions = $extensions | Sort-Object -Unique
-$installed = @(code --list-extensions 2>$null)
+$installed = @()
+
+if ($codeAvailable) {
+    $installed = @(code --list-extensions 2>$null)
+}
 
 Write-Host "Perfil: $Profile" -ForegroundColor Cyan
 Write-Host "Extensões planejadas: $($extensions.Count)"

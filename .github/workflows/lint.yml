@@ -9,14 +9,14 @@ permissions:
   contents: read
 
 jobs:
-  shellcheck:
+  linux:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install ShellCheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Install validation dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck jq
 
       - name: Check Bash syntax
         run: |
@@ -24,11 +24,17 @@ jobs:
           bash -n linux/bootstrap-vm-ubuntu.sh
           bash -n diagnostics/dev-doctor.sh
           bash -n certificates/import-ca-linux.sh
+          bash -n tools/state.sh
           bash -n tools/install-vscode-extensions.sh
           bash -n tools/update-devkit.sh
           bash -n tools/inventory.sh
           bash -n tools/cleanup.sh
           bash -n tools/run-config.sh
+          bash -n tools/show-state.sh
+          bash -n tools/backup-vscode.sh
+          bash -n tools/restore-vscode.sh
+          bash -n tools/backup-git.sh
+          bash -n tools/restore-git.sh
 
       - name: Run ShellCheck
         run: |
@@ -36,22 +42,46 @@ jobs:
           shellcheck -S warning linux/bootstrap-vm-ubuntu.sh
           shellcheck -S warning diagnostics/dev-doctor.sh
           shellcheck -S warning certificates/import-ca-linux.sh
+          shellcheck -S warning tools/state.sh
           shellcheck -S warning tools/install-vscode-extensions.sh
           shellcheck -S warning tools/update-devkit.sh
           shellcheck -S warning tools/inventory.sh
           shellcheck -S warning tools/cleanup.sh
           shellcheck -S warning tools/run-config.sh
+          shellcheck -S warning tools/show-state.sh
+          shellcheck -S warning tools/backup-vscode.sh
+          shellcheck -S warning tools/restore-vscode.sh
+          shellcheck -S warning tools/backup-git.sh
+          shellcheck -S warning tools/restore-git.sh
 
       - name: Validate JSON
         run: python3 -m json.tool config/devkit.config.example.json > /dev/null
 
       - name: Linux dry-run smoke test
         run: |
-          bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --dry-run
+          bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --package redis-tools --dry-run
           cp config/devkit.config.example.json config/devkit.config.json
           bash tools/run-config.sh --config config/devkit.config.json --dry-run
 
-  powershell:
+      - name: Linux state manifest smoke test
+        run: |
+          rm -rf .super-dev-kit
+          source tools/state.sh
+          ensure_state
+          state_add_profile "fullstack"
+          state_register_package "example-preexisting" "example-preexisting" "apt" true true
+          state_register_package "example-owned" "example-owned" "apt" false true
+          state_register_extension "example.extension" false true
+          state_register_feature "example-feature" false true
+
+          test "$(jq -r '.platform' .super-dev-kit/manifest.json)" = "linux"
+          test "$(jq -r '.packages[] | select(.id=="example-preexisting") | .installed_by_devkit' .super-dev-kit/manifest.json)" = "false"
+          test "$(jq -r '.packages[] | select(.id=="example-owned") | .installed_by_devkit' .super-dev-kit/manifest.json)" = "true"
+
+          bash tools/show-state.sh
+          bash tools/cleanup.sh
+
+  windows:
     runs-on: windows-latest
 
     steps:
@@ -69,11 +99,17 @@ jobs:
             "windows/setup-windows.ps1",
             "diagnostics/dev-doctor.ps1",
             "certificates/export-root-ca.ps1",
+            "tools/state.ps1",
             "tools/install-vscode-extensions.ps1",
             "tools/update-devkit.ps1",
             "tools/inventory.ps1",
             "tools/cleanup.ps1",
-            "tools/run-config.ps1"
+            "tools/run-config.ps1",
+            "tools/show-state.ps1",
+            "tools/backup-vscode.ps1",
+            "tools/restore-vscode.ps1",
+            "tools/backup-git.ps1",
+            "tools/restore-git.ps1"
           )
 
           $results = foreach ($file in $files) {
@@ -90,12 +126,34 @@ jobs:
       - name: Windows PowerShell dry-run smoke test
         shell: powershell
         run: |
-          .\windows\setup-windows.ps1 -Profile FullStack -DryRun
+          .\windows\setup-windows.ps1 -Profile FullStack -CustomPackages "Microsoft.AzureCLI" -DryRun
           Copy-Item .\config\devkit.config.example.json .\config\devkit.config.json
           .\tools\run-config.ps1 -ConfigPath .\config\devkit.config.json -DryRun
 
-      - name: Windows CMD dry-run smoke test
+      - name: Windows state manifest smoke test
+        shell: powershell
+        run: |
+          Remove-Item .\.super-dev-kit -Recurse -Force -ErrorAction SilentlyContinue
+          . .\tools\state.ps1
+          Initialize-DevKitState -Platform "windows"
+          Add-DevKitProfile -Profile "FullStack"
+          Register-DevKitPackage -Id "Example.Preexisting" -Name "Preexisting" -Manager "winget" -Preexisting $true -PresentAfter $true
+          Register-DevKitPackage -Id "Example.Owned" -Name "Owned" -Manager "winget" -Preexisting $false -PresentAfter $true
+          Register-DevKitExtension -Id "example.extension" -Preexisting $false -PresentAfter $true
+          Register-DevKitFeature -Name "ExampleFeature" -Preexisting $false -PresentAfter $true
+
+          $state = Get-Content .\.super-dev-kit\manifest.json -Raw | ConvertFrom-Json
+          if ($state.platform -ne "windows") { throw "platform inválida" }
+          if (($state.packages | Where-Object id -eq "Example.Preexisting").installed_by_devkit -ne $false) { throw "preexisting incorreto" }
+          if (($state.packages | Where-Object id -eq "Example.Owned").installed_by_devkit -ne $true) { throw "owned incorreto" }
+
+          .\tools\show-state.ps1
+          .\tools\cleanup.ps1
+
+      - name: Windows CMD smoke test
         shell: cmd
         run: |
           call windows\setup-windows.cmd -Profile FullStack -DryRun
           call tools\run-config.cmd -ConfigPath .\config\devkit.config.json -DryRun
+          call tools\show-state.cmd
+          call tools\cleanup.cmd

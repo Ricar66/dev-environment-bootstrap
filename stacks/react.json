@@ -1,0 +1,7 @@
+{
+  "name": "React",
+  "slug": "react",
+  "description": "Frontend moderno com Node.js, React tooling e VS Code.",
+  "base_profile": "frontend",
+  "modules": ["react"]
+}

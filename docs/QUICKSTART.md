@@ -1,5 +1,7 @@
 # Quick Start — Super Dev Kit
 
+> Versão em português. [Read in English](QUICKSTART.en.md).
+
 Este é o fluxo recomendado para preparar uma máquina nova com o Super Dev Kit.
 
 Na v1.0, a forma recomendada de usar o projeto é pela CLI unificada `devkit`. Os menus e scripts antigos continuam disponíveis.

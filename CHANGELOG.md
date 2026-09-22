@@ -2,6 +2,20 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.3.1 - 2026-09-22
+
+### Adicionado
+
+- launcher principal `setup.cmd`;
+- wrappers CMD para instalador, Dev Doctor, configuração JSON, VS Code, inventário, update e cleanup;
+- testes automatizados dos wrappers CMD no GitHub Actions;
+- documentação equivalente para CMD e PowerShell.
+
+### Compatibilidade
+
+- Windows agora possui caminhos documentados e testados para **CMD e PowerShell**;
+- os wrappers CMD reutilizam a mesma lógica PowerShell para evitar divergência entre implementações.
+
 ## 0.3.0 - 2026-09-22
 
 ### Adicionado

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "modules": {
+    "node": {
+      "name": "Node.js",
+      "description": "Runtime JavaScript e npm.",
+      "windows_packages": ["OpenJS.NodeJS.LTS"],
+      "linux_packages": ["nodejs", "npm"],
+      "vscode_extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    },
+    "react": {
+      "name": "React",
+      "description": "Experiência frontend React sobre Node.js.",
+      "depends_on": ["node"],
+      "windows_packages": [],
+      "linux_packages": [],
+      "vscode_extensions": ["bradlc.vscode-tailwindcss"]
+    },
+    "nestjs": {
+      "name": "NestJS",
+      "description": "Ambiente backend Node/NestJS.",
+      "depends_on": ["node", "docker"],
+      "windows_packages": ["Postman.Postman"],
+      "linux_packages": [],
+      "vscode_extensions": ["humao.rest-client", "ms-azuretools.vscode-docker"]
+    },
+    "python": {
+      "name": "Python",
+      "description": "Python, pip e ambientes virtuais.",
+      "windows_packages": ["Python.Python.3.13"],
+      "linux_packages": ["python3", "python3-pip", "python3-venv"],
+      "vscode_extensions": ["ms-python.python", "ms-python.vscode-pylance"]
+    },
+    "dotnet": {
+      "name": ".NET",
+      "description": "SDK .NET para C#.",
+      "windows_packages": ["Microsoft.DotNet.SDK.10"],
+      "linux_packages": ["dotnet-sdk-10.0"],
+      "vscode_extensions": ["ms-dotnettools.csharp"]
+    },
+    "java": {
+      "name": "Java",
+      "description": "JDK LTS e ferramentas Java.",
+      "windows_packages": ["EclipseAdoptium.Temurin.21.JDK"],
+      "linux_packages": ["openjdk-21-jdk"],
+      "vscode_extensions": ["vscjava.vscode-java-pack"]
+    },
+    "php": {
+      "name": "PHP",
+      "description": "PHP CLI e Composer.",
+      "windows_packages": ["PHP.PHP.8.4", "Composer.Composer"],
+      "linux_packages": ["php-cli", "php-mbstring", "php-xml", "composer"],
+      "vscode_extensions": ["bmewburn.vscode-intelephense-client"]
+    },
+    "docker": {
+      "name": "Docker",
+      "description": "Containers e Docker Compose.",
+      "windows_packages": ["Docker.DockerDesktop"],
+      "linux_packages": ["docker.io"],
+      "vscode_extensions": ["ms-azuretools.vscode-docker"]
+    },
+    "sql": {
+      "name": "SQL",
+      "description": "Clientes SQL e ferramentas de banco.",
+      "windows_packages": ["DBeaver.DBeaver.Community"],
+      "linux_packages": ["sqlite3", "postgresql-client", "default-mysql-client"],
+      "vscode_extensions": ["mtxr.sqltools", "mtxr.sqltools-driver-mysql", "mtxr.sqltools-driver-pg"]
+    },
+    "devops": {
+      "name": "DevOps",
+      "description": "Docker, YAML, SSH e utilitários DevOps.",
+      "depends_on": ["docker"],
+      "windows_packages": [],
+      "linux_packages": [],
+      "vscode_extensions": ["redhat.vscode-yaml", "ms-vscode-remote.remote-ssh"]
+    }
+  }
+}

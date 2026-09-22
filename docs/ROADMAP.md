@@ -15,87 +15,104 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 
 ## v0.2 — Perfis e experiência
 
-- [x] Essential
-- [x] Frontend
-- [x] Backend
-- [x] Full Stack
-- [x] Data / SQL
-- [x] DevOps
-- [x] Menu interativo no Windows
-- [x] Menu interativo no Linux
-- [x] Exemplos Nginx, MySQL e PostgreSQL
-- [x] Certificado CA opcional
-- [x] Exportador de CA no Windows
-- [x] Importador de CA no Linux
+- [x] Essential, Frontend, Backend, Full Stack, Data / SQL e DevOps
+- [x] Menus interativos Windows e Linux
+- [x] Exemplos Docker
+- [x] Certificados corporativos opcionais e seguros
 
 ## v0.3 — Automação avançada
 
-- [x] Dry-run no Windows
-- [x] Dry-run no Linux
+- [x] Dry-run
 - [x] Configuração declarativa em JSON
-- [x] Runner da configuração no Windows
-- [x] Runner da configuração no Linux
 - [x] Extensões VS Code por perfil
 - [x] Auto-update seguro
-- [x] Inventário/exportação do ambiente
-- [x] Central de operações no Windows e Linux
-- [x] Compatibilidade CMD + PowerShell + Bash
-- [x] Smoke tests em runners descartáveis
+- [x] Inventário do ambiente
+- [x] CMD + PowerShell + Bash
+- [x] Smoke tests multiplataforma
 
 ## v0.4 — Estado e reprodutibilidade
 
-- [x] Manifesto de instalação por máquina
-- [x] Registrar o que foi instalado pelo kit
-- [x] Registrar itens preexistentes
+- [x] Manifesto por máquina
+- [x] Registro do que foi instalado pelo kit
+- [x] Registro de itens preexistentes
 - [x] Cleanup baseado em manifesto
-- [x] Backup/restauração da configuração do VS Code
-- [x] Exportação/importação de configuração Git segura
+- [x] Backup/restauração do VS Code
+- [x] Backup/restauração segura do Git
 - [x] Pacotes e extensões customizados
-- [x] Variáveis de proxy por configuração
-- [x] Logs estruturados em JSON Lines
-- [x] Estado, backups e logs protegidos pelo .gitignore
-- [x] Testes automatizados do manifesto
+- [x] Variáveis de proxy
+- [x] Logs estruturados
+- [x] Estado local protegido do Git
 
 ## v0.5 — Developer Experience e módulos
 
-- [ ] Arquitetura modular por ferramentas
-- [ ] Catálogo de stacks
-- [ ] React / Node / NestJS
-- [ ] .NET
-- [ ] Python
-- [ ] Java
-- [ ] PHP
-- [ ] Data / SQL
-- [ ] DevOps
-- [ ] Dev Doctor com pontuação e checks por categoria
-- [ ] Wizard de seleção de stack
-- [ ] Presets reutilizáveis em JSON
-- [ ] Documentação para criação de novos módulos
-- [ ] Melhor experiência de erros e resumo final
+- [x] Arquitetura modular por ferramentas
+- [x] Catálogo de stacks
+- [x] React
+- [x] Node / NestJS
+- [x] Full Stack React + Node
+- [x] .NET
+- [x] Python
+- [x] Java
+- [x] PHP
+- [x] Data / SQL
+- [x] DevOps
+- [x] Stack Wizard
+- [x] Dev Doctor v2 com score
+- [x] Detecção de drift
+- [x] Presets reutilizáveis em JSON
+- [x] Documentação para criação de módulos
+- [x] CI validando stacks e módulos
 
-## v0.6 — Versões e ambientes
+## v0.6 — Versões e ambientes reproduzíveis
 
 - [ ] Gerenciamento de versões de runtimes
 - [ ] Node LTS selecionável
 - [ ] Python selecionável
 - [ ] .NET SDK selecionável
 - [ ] Java selecionável
-- [ ] export/import de ambiente entre máquinas
+- [ ] PHP selecionável
+- [ ] arquivo lock do ambiente
+- [ ] export/import entre máquinas
+- [ ] validação de compatibilidade por sistema operacional
+- [ ] cache/download resiliente
+- [ ] presets de versões estáveis
+
+## v0.7 — Templates de projetos
+
+- [ ] React/Vite
+- [ ] Node/NestJS
+- [ ] .NET Web API
+- [ ] Python API
+- [ ] Docker Compose
+- [ ] Dev Containers
+
+## v0.8 — CLI unificada
+
+- [ ] `devkit setup`
+- [ ] `devkit doctor`
+- [ ] `devkit stack`
+- [ ] `devkit state`
+- [ ] `devkit backup`
+- [ ] `devkit update`
+
+## v0.9 — Preparação pública
+
+- [ ] site/documentação
+- [ ] screenshots e GIFs
+- [ ] guias de contribuição
+- [ ] first issues
+- [ ] testes end-to-end
 
 ## v1.0 — Estável
 
-- [ ] Testes de instalação end-to-end em Windows e Ubuntu
-- [ ] Releases versionadas e assinadas
-- [ ] Compatibilidade documentada por versão de SO
-- [ ] Guia completo de contribuição
-- [ ] Política de compatibilidade e breaking changes
-- [ ] Site/documentação pública
+- [ ] releases versionadas e assinadas
+- [ ] matriz de compatibilidade
+- [ ] política de breaking changes
+- [ ] documentação pública completa
 
 ## Futuro
 
 - [ ] macOS
 - [ ] Fedora
 - [ ] Debian dedicado
-- [ ] CLI unificada
-- [ ] catálogo de templates de projetos
 - [ ] plugins/extensões do próprio Super Dev Kit

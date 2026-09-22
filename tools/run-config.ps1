@@ -50,6 +50,15 @@ $params = @{
 if ($config.features.docker -eq $true) { $params.Docker = $true }
 if ($config.features.wsl -eq $true) { $params.WSL = $true }
 if ($config.features.extras -eq $true) { $params.Extras = $true }
+
+$customWindowsPackages = @()
+if ($config.custom -and $config.custom.windows_packages) {
+    $customWindowsPackages = @($config.custom.windows_packages | ForEach-Object { [string]$_ } | Where-Object { $_ })
+    if ($customWindowsPackages.Count -gt 0) {
+        $params.CustomPackages = $customWindowsPackages
+    }
+}
+
 if ($config.git.name) { $params.GitName = [string]$config.git.name }
 if ($config.git.email) { $params.GitEmail = [string]$config.git.email }
 if ($DryRun) { $params.DryRun = $true }
@@ -58,13 +67,43 @@ Write-Host "Configuração: $ConfigPath" -ForegroundColor Cyan
 Write-Host "Perfil: $resolvedProfile"
 Write-Host ""
 
-& $installer @params
+$oldHttpProxy = $env:HTTP_PROXY
+$oldHttpsProxy = $env:HTTPS_PROXY
+$oldNoProxy = $env:NO_PROXY
 
-if ($config.install_vscode_extensions -eq $true) {
-    if ($DryRun) {
-        & $extensions -Profile $resolvedProfile -DryRun
+try {
+    if ($config.proxy) {
+        if ($config.proxy.http) { $env:HTTP_PROXY = [string]$config.proxy.http }
+        if ($config.proxy.https) { $env:HTTPS_PROXY = [string]$config.proxy.https }
+        if ($config.proxy.no_proxy) { $env:NO_PROXY = [string]$config.proxy.no_proxy }
     }
-    else {
-        & $extensions -Profile $resolvedProfile
+
+    & $installer @params
+
+    if ($config.install_vscode_extensions -eq $true) {
+        $extraExtensions = @()
+
+        if ($config.custom -and $config.custom.vscode_extensions) {
+            $extraExtensions = @($config.custom.vscode_extensions | ForEach-Object { [string]$_ } | Where-Object { $_ })
+        }
+
+        $extensionParams = @{
+            Profile = $resolvedProfile
+        }
+
+        if ($extraExtensions.Count -gt 0) {
+            $extensionParams.ExtraExtension = $extraExtensions
+        }
+
+        if ($DryRun) {
+            $extensionParams.DryRun = $true
+        }
+
+        & $extensions @extensionParams
     }
+}
+finally {
+    $env:HTTP_PROXY = $oldHttpProxy
+    $env:HTTPS_PROXY = $oldHttpsProxy
+    $env:NO_PROXY = $oldNoProxy
 }

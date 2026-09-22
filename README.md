@@ -2,108 +2,180 @@
 
 Um kit open source para preparar, validar e documentar rapidamente um ambiente de desenvolvimento no **Windows** e em **Ubuntu/VirtualBox**.
 
-A proposta é transformar horas de configuração em poucos comandos, sem esconder o que está acontecendo. O projeto foi pensado para estudantes, iniciantes e desenvolvedores que querem um ambiente reproduzível, seguro e fácil de diagnosticar.
+A ideia é simples: em vez de configurar Git, Node.js, Docker, SSH, VS Code, ferramentas de API, clientes SQL e utilitários manualmente em toda máquina nova, você clona um repositório, escolhe um perfil e deixa o kit fazer o trabalho repetitivo.
 
 ![Lint scripts](https://github.com/Ricar66/dev-environment-bootstrap/actions/workflows/lint.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-VM-orange)
 
-## ⚡ Modo fácil
+## ⚡ Comece por aqui
 
-No Windows, execute o menu principal em um PowerShell aberto como Administrador:
+Guia completo: [Quick Start passo a passo](docs/QUICKSTART.md)
+
+### Windows
+
+Se ainda não tiver Git:
 
 ```powershell
+winget install --id Git.Git -e
+```
+
+Depois:
+
+```powershell
+git clone https://github.com/Ricar66/dev-environment-bootstrap.git
+cd dev-environment-bootstrap
 Set-ExecutionPolicy -Scope Process Bypass
 .\setup.ps1
 ```
 
-No Ubuntu/Linux:
+Abra o PowerShell como **Administrador**.
+
+### Ubuntu / Linux
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+sudo apt update
+sudo apt install -y git
+
+git clone https://github.com/Ricar66/dev-environment-bootstrap.git
+cd dev-environment-bootstrap
+bash setup.sh
 ```
 
-O menu permite instalar os componentes principais ou executar o **Dev Doctor**, que verifica as ferramentas e alguns problemas comuns do ambiente.
+Usamos `bash setup.sh` para que o funcionamento não dependa da permissão executável do arquivo no clone.
 
-## O que este repositório configura
+## 🧩 Perfis
 
-### Windows
+O menu possui perfis para diferentes tipos de ambiente:
 
-O script `windows/setup-windows.ps1` usa **winget** e instala, por padrão:
+| Perfil | Foco |
+| --- | --- |
+| Essential | Git, editor, terminal e utilitários |
+| Frontend | Node.js, npm e ferramentas para APIs |
+| Backend | Node.js, Python, Docker e APIs |
+| FullStack | Frontend + Backend + containers |
+| Data / SQL | Python, SQL, clientes de banco e Docker |
+| DevOps | Docker, WSL/SSH e ferramentas de ambiente |
+
+Detalhes: [Perfis de desenvolvimento](docs/PROFILES.md)
+
+## 🪟 Windows
+
+O instalador usa **winget** e pode configurar:
 
 - Git
-- Node.js LTS
 - Visual Studio Code
 - PowerShell 7
 - Windows Terminal
 - GitHub CLI
 - 7-Zip
+- Node.js LTS
+- Python
+- Postman
+- DBeaver
+- Docker Desktop
+- WSL
 
-Também existem opções para Docker Desktop, WSL, Postman e configuração inicial do Git.
-
-### Ubuntu / VirtualBox
-
-O script `linux/bootstrap-vm-ubuntu.sh` prepara uma VM Ubuntu com:
-
-- Git, curl, wget, unzip e zip
-- nano, vim, htop, tree e jq
-- ferramentas de rede e compilação
-- OpenSSH Server
-- Docker e Docker Compose
-- VirtualBox Guest Utilities, quando o VirtualBox é detectado
-- grupos `docker` e `vboxsf`
-- certificado CA corporativo opcional
-- testes de HTTPS, Docker Hub, SSH e `hello-world`
-
-## Início rápido
-
-### Windows
+Execução direta por perfil:
 
 ```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-.\setup.ps1
+.\windows\setup-windows.ps1 -Profile Frontend
 ```
 
-Ou execute diretamente:
+```powershell
+.\windows\setup-windows.ps1 -Profile FullStack
+```
+
+```powershell
+.\windows\setup-windows.ps1 -Profile DataSQL
+```
+
+Para instalar tudo:
 
 ```powershell
 .\windows\setup-windows.ps1 -All
 ```
 
-Para configurar também a identidade do Git:
+## 🐧 Ubuntu / VirtualBox
+
+O bootstrap Linux instala a base do ambiente, Docker, Compose, SSH, ferramentas de rede e componentes adicionais conforme o perfil.
+
+Exemplo:
+
+```bash
+sudo bash linux/bootstrap-vm-ubuntu.sh --profile fullstack
+```
+
+Data / SQL:
+
+```bash
+sudo bash linux/bootstrap-vm-ubuntu.sh --profile datasql
+```
+
+DevOps:
+
+```bash
+sudo bash linux/bootstrap-vm-ubuntu.sh --profile devops
+```
+
+Quando executado dentro do VirtualBox, o script também tenta instalar Guest Utilities e configurar o grupo `vboxsf`.
+
+## 🔐 Certificados corporativos: somente quando necessário
+
+**Nem toda máquina precisa de certificado adicional.**
+
+Primeiro faça a instalação normalmente e teste:
+
+```bash
+docker run --rm hello-world
+```
+
+Se funcionar, não precisa fazer mais nada.
+
+Se aparecer erro como:
+
+```text
+x509: certificate signed by unknown authority
+```
+
+o Super Dev Kit possui um fluxo específico para redes com proxy/firewall fazendo inspeção HTTPS.
+
+Descubra o emissor:
+
+```bash
+curl -vk https://registry-1.docker.io/v2/ 2>&1 | grep -i issuer
+```
+
+No Windows, exporte **somente o certificado público**:
 
 ```powershell
-.\windows\setup-windows.ps1 `
-  -GitName "Seu Nome" `
-  -GitEmail "seu-email@exemplo.com"
+.\certificates\export-root-ca.ps1 -Search "nome-do-emissor"
 ```
 
-### Ubuntu
+O arquivo fica localmente em:
+
+```text
+certificates\local\devkit-root-ca.cer
+```
+
+Essa pasta é ignorada pelo Git.
+
+Na VM Linux:
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+sudo bash certificates/import-ca-linux.sh --auto
 ```
 
-Ou diretamente:
+O importador encontra arquivos `.cer/.crt`, mostra Subject, Issuer, validade e fingerprint e pede confirmação antes de confiar na CA.
 
-```bash
-sudo bash linux/bootstrap-vm-ubuntu.sh
-```
+Veja o guia completo: [Certificados corporativos e x509](docs/CERTIFICADOS-CORPORATIVOS.md)
 
-Em uma rede corporativa que faça inspeção HTTPS:
-
-```bash
-sudo bash linux/bootstrap-vm-ubuntu.sh /caminho/certificado-raiz.cer
-```
-
-> Nunca publique no GitHub certificados privados, chaves, tokens ou arquivos internos da sua empresa/escola.
+> O repositório não distribui certificados internos de empresas ou instituições. Ele fornece as ferramentas para que cada usuário trabalhe com a CA autorizada da própria rede.
 
 ## 🩺 Dev Doctor
 
-O projeto inclui diagnóstico rápido para verificar se ferramentas essenciais estão disponíveis e detectar alguns problemas comuns.
+O Dev Doctor ajuda a entender rapidamente se o ambiente está pronto.
 
 Windows:
 
@@ -117,70 +189,114 @@ Linux:
 bash diagnostics/dev-doctor.sh
 ```
 
-## Estrutura
+Ele verifica ferramentas, Docker, SSH e conectividade HTTPS.
+
+## 🐳 Exemplos Docker
+
+O repositório inclui exemplos prontos:
+
+```text
+examples/
+├── nginx/
+├── mysql/
+└── postgres/
+```
+
+Nginx:
+
+```bash
+cd examples/nginx
+docker compose up -d
+```
+
+MySQL:
+
+```bash
+cd examples/mysql
+cp .env.example .env
+docker compose up -d
+```
+
+PostgreSQL:
+
+```bash
+cd examples/postgres
+cp .env.example .env
+docker compose up -d
+```
+
+Veja [examples/README.md](examples/README.md).
+
+## 📁 Estrutura
 
 ```text
 .
 ├── setup.ps1
 ├── setup.sh
-├── diagnostics/
-│   ├── dev-doctor.ps1
-│   └── dev-doctor.sh
 ├── windows/
 │   └── setup-windows.ps1
 ├── linux/
 │   └── bootstrap-vm-ubuntu.sh
+├── diagnostics/
+│   ├── dev-doctor.ps1
+│   └── dev-doctor.sh
+├── certificates/
+│   ├── export-root-ca.ps1
+│   ├── import-ca-linux.sh
+│   └── local/
+├── examples/
+│   ├── nginx/
+│   ├── mysql/
+│   └── postgres/
 ├── docs/
+│   ├── QUICKSTART.md
+│   ├── PROFILES.md
 │   ├── WINDOWS.md
 │   ├── UBUNTU-VM.md
 │   ├── VIRTUALBOX-SSH.md
 │   ├── CERTIFICADOS-CORPORATIVOS.md
 │   └── ROADMAP.md
 ├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   └── workflows/
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── CHANGELOG.md
-├── LICENSE
-└── README.md
+└── LICENSE
+```
+
+## 🔄 Atualização
+
+Depois de clonar uma vez:
+
+```bash
+git pull
+```
+
+ou no PowerShell:
+
+```powershell
+git pull
 ```
 
 ## Filosofia
 
-Os scripts buscam ser:
+O Super Dev Kit busca ser:
 
-- **legíveis**: comandos fáceis de estudar;
-- **idempotentes**: executar novamente não deve duplicar configurações;
-- **seguros**: não desabilitam validação TLS para contornar certificados;
-- **modulares**: componentes opcionais são ativados por parâmetro;
-- **educacionais**: a documentação explica o motivo das etapas.
+- **legível** — scripts que também servem para estudo;
+- **idempotente** — repetir uma instalação não deve duplicar configuração;
+- **seguro** — não desabilita TLS para esconder problemas;
+- **modular** — cada pessoa escolhe o perfil que precisa;
+- **diagnosticável** — erros devem apontar o próximo passo;
+- **reutilizável** — útil em novas VMs, notebooks e ambientes de estudo.
 
 ## Documentação
 
-- [Configuração do Windows](docs/WINDOWS.md)
-- [VM Ubuntu](docs/UBUNTU-VM.md)
+- [Quick Start](docs/QUICKSTART.md)
+- [Perfis](docs/PROFILES.md)
+- [Windows](docs/WINDOWS.md)
+- [Ubuntu / VM](docs/UBUNTU-VM.md)
 - [VirtualBox + SSH](docs/VIRTUALBOX-SSH.md)
-- [Certificados corporativos e erro x509](docs/CERTIFICADOS-CORPORATIVOS.md)
+- [Certificados corporativos](docs/CERTIFICADOS-CORPORATIVOS.md)
 - [Roadmap](docs/ROADMAP.md)
-
-## Problemas comuns
-
-### `docker: permission denied`
-
-Depois de adicionar seu usuário ao grupo `docker`, faça logout/login ou:
-
-```bash
-newgrp docker
-```
-
-### `x509: certificate signed by unknown authority`
-
-A rede pode estar usando proxy/firewall com inspeção HTTPS. Consulte [Certificados corporativos](docs/CERTIFICADOS-CORPORATIVOS.md).
-
-### `winget` não encontrado
-
-No Windows, instale ou atualize **App Installer** pela Microsoft Store.
 
 ## Contribuições
 
@@ -188,7 +304,7 @@ Issues e pull requests são bem-vindos. Veja [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Segurança
 
-Leia [SECURITY.md](SECURITY.md) antes de reportar uma vulnerabilidade ou compartilhar logs.
+Leia [SECURITY.md](SECURITY.md) antes de compartilhar logs, certificados ou reportar uma vulnerabilidade.
 
 ## Licença
 

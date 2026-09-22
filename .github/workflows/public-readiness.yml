@@ -63,3 +63,59 @@ jobs:
               bash devkit.sh stack react --dry-run
               bash devkit.sh project react-vite public-demo --output /tmp --dry-run
             '
+
+  redis-example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate Redis Compose example
+        shell: bash
+        run: |
+          set -euo pipefail
+          trap 'docker compose -f examples/redis/compose.yml down -v >/dev/null 2>&1 || true' EXIT
+
+          docker compose -f examples/redis/compose.yml config > /dev/null
+          docker compose -f examples/redis/compose.yml up -d
+
+          for attempt in $(seq 1 30); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' super-dev-kit-redis 2>/dev/null || true)"
+            echo "Redis health: ${status:-starting}"
+
+            if [[ "$status" == "healthy" ]]; then
+              break
+            fi
+
+            if [[ "$attempt" -eq 30 ]]; then
+              docker compose -f examples/redis/compose.yml logs redis
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          test "$(docker exec super-dev-kit-redis redis-cli ping)" = "PONG"
+
+  media-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate media from real CLI executions
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          python tools/generate-cli-media.py
+
+      - name: Validate generated media
+        run: |
+          test -f docs/media/generated/cli-help.png
+          test -f docs/media/generated/setup-fullstack-dry-run.png
+          test -f docs/media/generated/dev-doctor.png
+          test -f docs/media/generated/project-react-vite-dry-run.png
+          test -f docs/media/generated/cli-demo.gif
+          python3 -m json.tool docs/media/generated/capture-manifest.json > /dev/null
+          python3 tools/check-docs.py

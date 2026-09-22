@@ -52,8 +52,21 @@ PY
 }
 
 usage_error() {
-  echo "Erro: $*" >&2
-  echo "Use 'devkit help' para ver os comandos." >&2
+  local message="$*"
+
+  if [[ "${JSON_MODE:-0}" -eq 1 ]] && command -v python3 >/dev/null 2>&1; then
+    local data
+    data="$(python3 - "$message" <<'PY'
+import json, sys
+print(json.dumps({"error": sys.argv[1], "hint": "Use 'devkit help' para ver os comandos."}))
+PY
+)"
+    json_envelope "${COMMAND:-cli}" "$EXIT_USAGE" "$data"
+  else
+    echo "Erro: $message" >&2
+    echo "Use 'devkit help' para ver os comandos." >&2
+  fi
+
   exit "$EXIT_USAGE"
 }
 
@@ -414,55 +427,55 @@ case "$COMMAND" in
 
   project)
     TOOL="$ROOT_DIR/tools/create-project.sh"
+
     if [[ ${#REST[@]} -eq 1 && "${REST[0]}" == "list" ]]; then
       TOOL_ARGS=(--list)
-      break
+    else
+      [[ ${#REST[@]} -ge 2 ]] || usage_error "Use: devkit project <template> <nome> [opcoes]"
+      TOOL_ARGS=(--template "${REST[0]}" --name "${REST[1]}")
+      i=2
+
+      while (( i < ${#REST[@]} )); do
+        token="${REST[$i]}"
+        case "$token" in
+          --output)
+            (( i + 1 < ${#REST[@]} )) || usage_error "--output exige uma pasta."
+            TOOL_ARGS+=(--output "${REST[$((i+1))]}")
+            i=$((i+2))
+            ;;
+          --dry-run) TOOL_ARGS+=(--dry-run); i=$((i+1)) ;;
+          --force) TOOL_ARGS+=(--force); i=$((i+1)) ;;
+          --with-devcontainer) TOOL_ARGS+=(--with-devcontainer); i=$((i+1)) ;;
+          --install-deps) TOOL_ARGS+=(--install-deps); i=$((i+1)) ;;
+          *) usage_error "Opcao desconhecida em project: $token" ;;
+        esac
+      done
     fi
-
-    [[ ${#REST[@]} -ge 2 ]] || usage_error "Use: devkit project <template> <nome> [opcoes]"
-    TOOL_ARGS=(--template "${REST[0]}" --name "${REST[1]}")
-    i=2
-
-    while (( i < ${#REST[@]} )); do
-      token="${REST[$i]}"
-      case "$token" in
-        --output)
-          (( i + 1 < ${#REST[@]} )) || usage_error "--output exige uma pasta."
-          TOOL_ARGS+=(--output "${REST[$((i+1))]}")
-          i=$((i+2))
-          ;;
-        --dry-run) TOOL_ARGS+=(--dry-run); i=$((i+1)) ;;
-        --force) TOOL_ARGS+=(--force); i=$((i+1)) ;;
-        --with-devcontainer) TOOL_ARGS+=(--with-devcontainer); i=$((i+1)) ;;
-        --install-deps) TOOL_ARGS+=(--install-deps); i=$((i+1)) ;;
-        *) usage_error "Opcao desconhecida em project: $token" ;;
-      esac
-    done
     ;;
 
   runtime)
     TOOL="$ROOT_DIR/tools/runtime-manager.sh"
+
     if [[ ${#REST[@]} -eq 1 && "${REST[0]}" == "list" ]]; then
       TOOL_ARGS=(--list)
-      break
+    else
+      [[ ${#REST[@]} -ge 2 ]] || usage_error "Use: devkit runtime <runtime> <versao> [--manager auto] [--dry-run]"
+      TOOL_ARGS=(--runtime "${REST[0]}" --version "${REST[1]}")
+      i=2
+
+      while (( i < ${#REST[@]} )); do
+        token="${REST[$i]}"
+        case "$token" in
+          --manager)
+            (( i + 1 < ${#REST[@]} )) || usage_error "--manager exige um valor."
+            TOOL_ARGS+=(--manager "${REST[$((i+1))]}")
+            i=$((i+2))
+            ;;
+          --dry-run) TOOL_ARGS+=(--dry-run); i=$((i+1)) ;;
+          *) usage_error "Opcao desconhecida em runtime: $token" ;;
+        esac
+      done
     fi
-
-    [[ ${#REST[@]} -ge 2 ]] || usage_error "Use: devkit runtime <runtime> <versao> [--manager auto] [--dry-run]"
-    TOOL_ARGS=(--runtime "${REST[0]}" --version "${REST[1]}")
-    i=2
-
-    while (( i < ${#REST[@]} )); do
-      token="${REST[$i]}"
-      case "$token" in
-        --manager)
-          (( i + 1 < ${#REST[@]} )) || usage_error "--manager exige um valor."
-          TOOL_ARGS+=(--manager "${REST[$((i+1))]}")
-          i=$((i+2))
-          ;;
-        --dry-run) TOOL_ARGS+=(--dry-run); i=$((i+1)) ;;
-        *) usage_error "Opcao desconhecida em runtime: $token" ;;
-      esac
-    done
     ;;
 
   state)

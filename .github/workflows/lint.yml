@@ -87,9 +87,15 @@ jobs:
         shell: pwsh
         run: Get-Content config/devkit.config.example.json -Raw | ConvertFrom-Json | Out-Null
 
-      - name: Windows dry-run smoke test
+      - name: Windows PowerShell dry-run smoke test
         shell: powershell
         run: |
           .\windows\setup-windows.ps1 -Profile FullStack -DryRun
           Copy-Item .\config\devkit.config.example.json .\config\devkit.config.json
           .\tools\run-config.ps1 -ConfigPath .\config\devkit.config.json -DryRun
+
+      - name: Windows CMD dry-run smoke test
+        shell: cmd
+        run: |
+          call windows\setup-windows.cmd -Profile FullStack -DryRun
+          call tools\run-config.cmd -ConfigPath .\config\devkit.config.json -DryRun

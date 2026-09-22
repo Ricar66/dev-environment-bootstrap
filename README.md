@@ -60,6 +60,37 @@ O menu possui perfis para diferentes tipos de ambiente:
 
 Detalhes: [Perfis de desenvolvimento](docs/PROFILES.md)
 
+## ⚙️ Automação avançada v0.3
+
+A v0.3 transforma o projeto em uma central de operações para o ambiente de desenvolvimento:
+
+- dry-run antes de qualquer instalação;
+- configuração declarativa em JSON;
+- extensões do VS Code por perfil;
+- auto-update seguro;
+- inventário de ferramentas e versões;
+- cleanup/uninstall controlado;
+- relatórios locais ignorados pelo Git;
+- smoke tests em Windows e Linux via GitHub Actions.
+
+Exemplo de dry-run:
+
+```bash
+bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --dry-run
+```
+
+```powershell
+.\windows\setup-windows.ps1 -Profile FullStack -DryRun
+```
+
+Configuração local:
+
+```text
+config/devkit.config.json
+```
+
+Ela pode definir perfil, Git, Docker/WSL, extensões e certificado opcional. Veja [Automação avançada](docs/AUTOMATION.md).
+
 ## 🪟 Windows
 
 O instalador usa **winget** e pode configurar:
@@ -248,6 +279,15 @@ Veja [examples/README.md](examples/README.md).
 │   ├── nginx/
 │   ├── mysql/
 │   └── postgres/
+├── config/
+│   └── devkit.config.example.json
+├── tools/
+│   ├── run-config.*
+│   ├── install-vscode-extensions.*
+│   ├── update-devkit.*
+│   ├── inventory.*
+│   └── cleanup.*
+├── reports/
 ├── docs/
 │   ├── QUICKSTART.md
 │   ├── PROFILES.md
@@ -291,6 +331,7 @@ O Super Dev Kit busca ser:
 ## Documentação
 
 - [Quick Start](docs/QUICKSTART.md)
+- [Automação avançada v0.3](docs/AUTOMATION.md)
 - [Perfis](docs/PROFILES.md)
 - [Windows](docs/WINDOWS.md)
 - [Ubuntu / VM](docs/UBUNTU-VM.md)

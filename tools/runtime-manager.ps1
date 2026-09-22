@@ -51,7 +51,7 @@ function Show-Managers {
 
         foreach ($candidate in @($runtime.managers)) {
             $status = if (Test-ManagerAvailable -Name ([string]$candidate)) { "disponível" } else { "não detectado" }
-            Write-Host "  - $candidate: $status"
+            Write-Host "  - ${candidate}: $status"
         }
 
         Write-Host "  - fallback: $($runtime.fallback)"

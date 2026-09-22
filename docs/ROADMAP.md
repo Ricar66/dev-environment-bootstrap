@@ -73,15 +73,21 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 
 ## v0.7 — Templates e version managers
 
-- [ ] adapters opcionais para version managers
-- [ ] pinning mais forte de runtimes quando suportado
-- [ ] React/Vite
-- [ ] Node/NestJS
-- [ ] .NET Web API
-- [ ] Python API
-- [ ] Docker Compose
-- [ ] Dev Containers
-- [ ] cache/download resiliente
+- [x] adapters opcionais para version managers
+- [x] pinning mais forte de runtimes quando suportado
+- [x] fallback nativo seguro
+- [x] React/Vite
+- [x] Node/NestJS
+- [x] .NET Web API
+- [x] Python API
+- [x] Docker Compose
+- [x] Dev Containers
+- [x] Project Wizard
+- [x] dry-run de geração
+- [x] proteção contra sobrescrita
+- [x] retry controlado de dependências
+- [x] reutilização dos caches nativos dos package managers
+- [x] smoke tests de templates em Windows e Linux
 
 ## v0.8 — CLI unificada
 

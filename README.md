@@ -290,7 +290,8 @@ O kit consegue preparar Docker e Docker Compose e possui exemplos em:
 examples/
 ├── nginx/
 ├── mysql/
-└── postgres/
+├── postgres/
+└── redis/
 ~~~
 
 Teste básico:

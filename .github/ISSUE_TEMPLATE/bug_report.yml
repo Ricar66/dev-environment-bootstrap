@@ -1,18 +1,46 @@
 name: Bug report
-description: Informe um problema nos scripts ou na documentação.
+description: Informe um problema reproduzível no Super Dev Kit.
 title: "[Bug]: "
 labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Não publique tokens, senhas, chaves, certificados internos ou dados de clientes.
+
   - type: dropdown
     id: platform
     attributes:
       label: Plataforma
       options:
-        - Windows
-        - Ubuntu / Linux
+        - Windows 11 - CMD
+        - Windows 11 - PowerShell 5.1
+        - Windows - PowerShell 7
+        - Windows 10
+        - Ubuntu 24.04
+        - Ubuntu 22.04
         - VirtualBox
+        - WSL 2
         - Docker
         - Documentação
+        - Outra
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Versão do Super Dev Kit
+      description: Execute devkit version.
+      placeholder: "0.9.0"
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Comando executado
+      placeholder: "devkit setup fullstack --dry-run"
     validations:
       required: true
 
@@ -20,9 +48,16 @@ body:
     id: problem
     attributes:
       label: O que aconteceu?
-      description: Inclua a mensagem de erro, removendo qualquer dado sensível.
+      description: Inclua a mensagem de erro e passos para reproduzir.
     validations:
       required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Dev Doctor
+      description: Cole a saída de devkit doctor removendo informações sensíveis.
+      render: text
 
   - type: textarea
     id: expected
@@ -30,3 +65,11 @@ body:
       label: Comportamento esperado
     validations:
       required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Segurança
+      options:
+        - label: Revisei o conteúdo e removi segredos, credenciais e certificados internos.
+          required: true

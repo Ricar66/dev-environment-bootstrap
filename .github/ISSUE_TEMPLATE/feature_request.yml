@@ -1,12 +1,53 @@
 name: Feature request
-description: Sugira uma melhoria para o projeto.
+description: Sugira uma melhoria para o Super Dev Kit.
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
   - type: textarea
+    id: problem
+    attributes:
+      label: Problema que você quer resolver
+      description: Explique o cenário antes de propor a implementação.
+    validations:
+      required: true
+
+  - type: textarea
     id: proposal
     attributes:
       label: Proposta
-      description: Explique o que gostaria de adicionar e qual problema isso resolve.
+      description: Como você imagina a experiência de uso?
+      placeholder: "Ex.: devkit ..."
     validations:
       required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Área
+      options:
+        - CLI
+        - Windows
+        - Linux
+        - Docker
+        - Stacks
+        - Templates
+        - Version managers
+        - Dev Doctor
+        - Documentação
+        - CI / testes
+        - Outra
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Opcional. Há alguma solução manual ou ferramenta parecida?
+
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibilidade
+      options:
+        - label: A proposta considera Windows e Linux ou explica por que é específica de uma plataforma.

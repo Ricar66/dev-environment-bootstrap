@@ -2,6 +2,30 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.9.0 - 2026-09-22
+
+### Public readiness
+
+- README reorganizado para onboarding rápido;
+- arquitetura pública documentada;
+- FAQ, troubleshooting e matriz de suporte;
+- exemplos de automação JSON;
+- CONTRIBUTING ampliado;
+- Código de Conduta;
+- templates de bug, feature request e pull request;
+- guias para adicionar stacks, templates e adapters;
+- validador de UTF-8 e links locais;
+- workflow dedicado de public readiness;
+- smoke test PowerShell 7;
+- onboarding descartável em Ubuntu 24.04;
+- release notes e materiais de divulgação;
+- checklist seguro para capturas reais da CLI.
+
+### Qualidade
+
+A v0.9 prioriza apresentação, documentação, contribuição e confiabilidade antes da v1.0. Não foram introduzidas grandes mudanças de arquitetura ou instalação.
+
+
 ## 0.8.0 - 2026-09-22
 
 ### Adicionado

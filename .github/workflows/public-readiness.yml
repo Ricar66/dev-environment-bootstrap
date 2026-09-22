@@ -1,0 +1,65 @@
+name: Public Readiness
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate UTF-8 and local documentation links
+        run: python3 tools/check-docs.py
+
+      - name: Validate public JSON contracts
+        run: |
+          python3 -m json.tool cli/commands.json > /dev/null
+          python3 -m json.tool modules/catalog.json > /dev/null
+          python3 -m json.tool templates/catalog.json > /dev/null
+          python3 -m json.tool versions/managers.json > /dev/null
+
+  powershell7:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: PowerShell 7 CLI smoke test
+        shell: pwsh
+        run: |
+          ./devkit.ps1 version
+          ./devkit.ps1 commands
+          ./devkit.ps1 stack react --dry-run
+          ./devkit.ps1 project react-vite "PS7 Demo" --output ./.super-dev-kit/ps7 --dry-run
+          ./devkit.ps1 runtime node 22 --manager fnm --dry-run
+
+      - name: Validate docs from Windows
+        shell: pwsh
+        run: python tools/check-docs.py
+
+  ubuntu2404:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Ubuntu 24.04 disposable onboarding smoke test
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/workspace" \
+            -w /workspace \
+            ubuntu:24.04 \
+            bash -lc '
+              set -e
+              apt-get update >/dev/null
+              DEBIAN_FRONTEND=noninteractive apt-get install -y python3 git ca-certificates >/dev/null
+
+              bash devkit.sh version
+              bash devkit.sh setup essential --dry-run
+              bash devkit.sh stack react --dry-run
+              bash devkit.sh project react-vite public-demo --output /tmp --dry-run
+            '

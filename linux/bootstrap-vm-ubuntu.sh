@@ -11,7 +11,8 @@ set -Eeuo pipefail
 #   sudo bash linux/bootstrap-vm-ubuntu.sh --auto-ca --yes
 # ============================================================
 
-ORIGINAL_USER="${SUDO_USER:-$USER}"
+CURRENT_USER="${USER:-$(id -un 2>/dev/null || echo root)}"
+ORIGINAL_USER="${SUDO_USER:-$CURRENT_USER}"
 PROFILE="essential"
 CA_FILE=""
 AUTO_CA=0

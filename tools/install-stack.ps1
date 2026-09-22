@@ -16,6 +16,11 @@ $catalogPath = Join-Path $root "modules\catalog.json"
 $stackPath = Join-Path $root "stacks\$Stack.json"
 $installer = Join-Path $root "windows\setup-windows.ps1"
 $extensionsInstaller = Join-Path $root "tools\install-vscode-extensions.ps1"
+$stateHelper = Join-Path $root "tools\state.ps1"
+
+if (Test-Path $stateHelper) {
+    . $stateHelper
+}
 
 if (-not (Test-Path $catalogPath)) {
     throw "Catálogo de módulos não encontrado: $catalogPath"
@@ -150,5 +155,18 @@ if ($DryRun) {
     Write-Host "[OK] Plano da stack validado em dry-run." -ForegroundColor Green
 }
 else {
+    if (Get-Command Add-DevKitStack -ErrorAction SilentlyContinue) {
+        Add-DevKitStack -Stack ([string]$stackConfig.slug)
+
+        foreach ($moduleName in $resolved) {
+            Add-DevKitModule -Module ([string]$moduleName)
+        }
+
+        Write-DevKitEvent -Event "stack_installed" -Data @{
+            stack   = [string]$stackConfig.slug
+            modules = @($resolved)
+        }
+    }
+
     Write-Host "[OK] Stack $($stackConfig.name) processada." -ForegroundColor Green
 }

@@ -135,7 +135,7 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [ ] capturas reais da CLI adicionadas ao README
 - [ ] GIF/vídeo curto capturado de execução real
 - [ ] labels customizadas de área aplicadas no GitHub
-- [ ] good first issues publicados
+- [x] good first issues publicados
 
 ## v1.0 — Estável
 

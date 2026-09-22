@@ -205,6 +205,51 @@ bash tools/compare-environment.sh
 
 A v0.6 também suporta constraints portáveis para Node.js, Python, .NET, Java e PHP. Veja [Ambientes reproduzíveis](docs/REPRODUCIBILITY.md).
 
+## 🏗️ Project Templates — v0.7
+
+A v0.7 consegue gerar projetos locais a partir de templates versionados no próprio repositório.
+
+Project Wizard:
+
+```cmd
+tools\project-wizard.cmd
+```
+
+```powershell
+.\tools\project-wizard.ps1
+```
+
+```bash
+bash tools/project-wizard.sh
+```
+
+Criação direta:
+
+```bash
+bash tools/create-project.sh --template react-vite --name meu-app --dry-run
+bash tools/create-project.sh --template react-vite --name meu-app --with-devcontainer
+```
+
+Templates atuais: React + Vite, Node + NestJS, .NET Web API, Python/FastAPI e Docker Compose.
+
+Dependências só são instaladas quando solicitado explicitamente. Veja [Project Templates](docs/PROJECT-TEMPLATES.md).
+
+## 🧭 Version Manager Adapters — v0.7
+
+O kit também consegue usar version managers **já instalados** para pedir versões específicas de runtimes.
+
+```cmd
+tools\runtime-manager.cmd -Runtime node -Version 22 -Manager fnm -DryRun
+```
+
+```bash
+bash tools/runtime-manager.sh --runtime python --version 3.13.1 --manager pyenv --dry-run
+```
+
+Adapters atuais: fnm, nvm, pyenv, dotnet-install, SDKMAN e phpenv. Se nenhum estiver disponível, o fluxo cai para o instalador nativo sem quebrar o bootstrap.
+
+O Super Dev Kit não baixa version managers automaticamente. Veja [Version Manager Adapters](docs/VERSION-MANAGERS.md).
+
 ## 🪟 Windows
 
 O instalador usa **winget** e pode ser executado tanto pelo CMD quanto pelo PowerShell.
@@ -420,7 +465,15 @@ Veja [examples/README.md](examples/README.md).
 │   └── ...
 ├── versions/
 │   ├── catalog.json
-│   └── presets.json
+│   ├── presets.json
+│   └── managers.json
+├── templates/
+│   ├── catalog.json
+│   ├── react-vite/
+│   ├── node-nest/
+│   ├── dotnet-webapi/
+│   ├── python-api/
+│   └── docker-compose/
 ├── tools/
 │   ├── run-config.*
 │   ├── install-vscode-extensions.*
@@ -476,6 +529,8 @@ O Super Dev Kit busca ser:
 - [Arquitetura de módulos](docs/MODULES.md)
 - [Dev Doctor v2](docs/DEV-DOCTOR.md)
 - [Ambientes reproduzíveis v0.6](docs/REPRODUCIBILITY.md)
+- [Project Templates v0.7](docs/PROJECT-TEMPLATES.md)
+- [Version Manager Adapters v0.7](docs/VERSION-MANAGERS.md)
 - [Perfis](docs/PROFILES.md)
 - [Windows](docs/WINDOWS.md)
 - [Ubuntu / VM](docs/UBUNTU-VM.md)

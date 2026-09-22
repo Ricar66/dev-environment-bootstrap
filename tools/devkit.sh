@@ -7,7 +7,6 @@ COMMANDS_FILE="$ROOT_DIR/cli/commands.json"
 
 EXIT_USAGE=64
 EXIT_UNAVAILABLE=69
-EXIT_INTERNAL=70
 
 get_version() {
   if [[ -f "$VERSION_FILE" ]]; then

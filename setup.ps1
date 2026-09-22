@@ -17,6 +17,10 @@ $restoreVsCode = Join-Path $root "tools\restore-vscode.ps1"
 $backupGit = Join-Path $root "tools\backup-git.ps1"
 $restoreGit = Join-Path $root "tools\restore-git.ps1"
 $stackWizard = Join-Path $root "tools\stack-wizard.ps1"
+$exportEnvironment = Join-Path $root "tools\export-environment.ps1"
+$importEnvironment = Join-Path $root "tools\import-environment.ps1"
+$compareEnvironment = Join-Path $root "tools\compare-environment.ps1"
+$runtimeChecker = Join-Path $root "tools\check-runtime-versions.ps1"
 $configExample = Join-Path $root "config\devkit.config.example.json"
 $configLocal = Join-Path $root "config\devkit.config.json"
 $versionFile = Join-Path $root "VERSION"
@@ -49,6 +53,70 @@ function Pause-Menu {
     Read-Host "Pressione Enter para voltar" | Out-Null
 }
 
+function Show-ReproducibilityMenu {
+    while ($true) {
+        Clear-Host
+        Write-Host "====================================================" -ForegroundColor Cyan
+        Write-Host "        AMBIENTES REPRODUZÍVEIS - v0.6" -ForegroundColor Cyan
+        Write-Host "====================================================" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "1. Exportar ambiente para lock file"
+        Write-Host "2. Dry-run de importação"
+        Write-Host "3. Importar ambiente do lock"
+        Write-Host "4. Comparar lock x máquina"
+        Write-Host "5. Validar runtimes do config local"
+        Write-Host "6. Validar preset portable"
+        Write-Host "7. Validar preset modern"
+        Write-Host "0. Voltar"
+        Write-Host ""
+
+        $subChoice = Read-Host "Escolha uma opção"
+
+        switch ($subChoice) {
+            "1" {
+                & $exportEnvironment
+                Pause-Menu
+            }
+            "2" {
+                & $importEnvironment -DryRun
+                Pause-Menu
+            }
+            "3" {
+                & $importEnvironment
+                Pause-Menu
+            }
+            "4" {
+                & $compareEnvironment
+                Pause-Menu
+            }
+            "5" {
+                if (Test-Path $configLocal) {
+                    & $runtimeChecker -ConfigPath $configLocal -UpdateManifest -NoFail
+                }
+                else {
+                    Write-Host "Configuração local não encontrada. Use a opção 19 do menu principal." -ForegroundColor Yellow
+                }
+                Pause-Menu
+            }
+            "6" {
+                & $runtimeChecker -Preset "portable" -UpdateManifest -NoFail
+                Pause-Menu
+            }
+            "7" {
+                & $runtimeChecker -Preset "modern" -UpdateManifest -NoFail
+                Pause-Menu
+            }
+            "0" {
+                return
+            }
+            default {
+                Write-Host "Opção inválida." -ForegroundColor Yellow
+                Start-Sleep -Seconds 1
+            }
+        }
+    }
+}
+
 function Show-Menu {
     Clear-Host
     Write-Host "====================================================" -ForegroundColor Cyan
@@ -75,6 +143,7 @@ function Show-Menu {
     Write-Host "18. Exportar certificado CA confiável"
     Write-Host "19. Criar configuração local a partir do exemplo"
     Write-Host "20. Mostrar exemplos Docker"
+    Write-Host "21. Ambientes reproduzíveis / lock file"
     Write-Host "0.  Sair"
     Write-Host ""
 }
@@ -204,6 +273,9 @@ while ($true) {
         "20" {
             Get-Content (Join-Path $root "examples\README.md")
             Pause-Menu
+        }
+        "21" {
+            Show-ReproducibilityMenu
         }
         "0" {
             return

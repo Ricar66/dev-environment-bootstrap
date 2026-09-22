@@ -14,13 +14,28 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host "        SUPER DEV KIT - ESTADO LOCAL" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "Schema:     $($state.schema_version)"
 Write-Host "Plataforma: $($state.platform)"
 Write-Host "Host:       $($state.host)"
 Write-Host "Criado:     $($state.created_at)"
 Write-Host "Atualizado: $($state.updated_at)"
 Write-Host "Perfis:     $(@($state.profiles) -join ', ')"
+Write-Host "Stacks:     $(@($state.stacks) -join ', ')"
+Write-Host "Módulos:    $(@($state.modules) -join ', ')"
 Write-Host ""
 
+Write-Host "Runtimes:"
+if (-not $state.runtime_versions -or $state.runtime_versions.PSObject.Properties.Count -eq 0) {
+    Write-Host "  (nenhum registrado)"
+}
+else {
+    foreach ($property in $state.runtime_versions.PSObject.Properties) {
+        $value = $property.Value
+        Write-Host "  - $($property.Name): actual=$($value.actual), desired=$($value.desired), policy=$($value.policy)"
+    }
+}
+
+Write-Host ""
 Write-Host "Pacotes instalados pelo kit:"
 $ownedPackages = @($state.packages | Where-Object { $_.installed_by_devkit -eq $true })
 if ($ownedPackages.Count -eq 0) {
@@ -46,8 +61,14 @@ else {
 
 Write-Host ""
 Write-Host "Recursos controlados:"
-foreach ($item in @($state.features)) {
-    Write-Host "  - $($item.name): present=$($item.present), by_devkit=$($item.enabled_by_devkit)"
+$features = @($state.features)
+if ($features.Count -eq 0) {
+    Write-Host "  (nenhum)"
+}
+else {
+    foreach ($item in $features) {
+        Write-Host "  - $($item.name): present=$($item.present), by_devkit=$($item.enabled_by_devkit)"
+    }
 }
 
 Write-Host ""

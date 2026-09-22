@@ -143,8 +143,9 @@ else
 fi
 
 if [[ -f "$MANIFEST" ]]; then
-  if jq -e '.schema_version == 1' "$MANIFEST" >/dev/null 2>&1; then
-    add_check "Estado" "Manifesto" "PASS" "$MANIFEST"
+  if jq -e '.schema_version == 1 or .schema_version == 2' "$MANIFEST" >/dev/null 2>&1; then
+    schema="$(jq -r '.schema_version' "$MANIFEST")"
+    add_check "Estado" "Manifesto" "PASS" "schema=$schema | $MANIFEST"
   else
     add_check "Estado" "Manifesto" "WARN" "Schema ausente ou desconhecido."
   fi

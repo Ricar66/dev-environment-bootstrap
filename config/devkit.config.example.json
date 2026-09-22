@@ -2,6 +2,13 @@
   "profile": "fullstack",
   "install_vscode_extensions": true,
   "non_interactive": false,
+  "runtime_versions": {
+    "node": "",
+    "python": "",
+    "dotnet": "",
+    "java": "",
+    "php": ""
+  },
   "git": {
     "name": "",
     "email": ""

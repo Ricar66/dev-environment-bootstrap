@@ -42,6 +42,7 @@ if (-not $profileMap.ContainsKey($key)) {
 $resolvedProfile = $profileMap[$key]
 $installer = Join-Path $root "windows\setup-windows.ps1"
 $extensions = Join-Path $root "tools\install-vscode-extensions.ps1"
+$runtimeChecker = Join-Path $root "tools\check-runtime-versions.ps1"
 
 $params = @{
     Profile = $resolvedProfile
@@ -100,6 +101,14 @@ try {
         }
 
         & $extensions @extensionParams
+    }
+
+    if (-not $DryRun -and $config.runtime_versions) {
+        & $runtimeChecker -ConfigPath $ConfigPath -UpdateManifest -NoFail
+    }
+    elseif ($DryRun -and $config.runtime_versions) {
+        Write-Host ""
+        Write-Host "[DRY-RUN] Restrições de runtime serão verificadas após a instalação real."
     }
 }
 finally {

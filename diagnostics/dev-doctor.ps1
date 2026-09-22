@@ -177,8 +177,8 @@ if (Test-Path $manifestPath) {
     try {
         $state = Get-Content $manifestPath -Raw | ConvertFrom-Json
 
-        if ($state.schema_version -eq 1) {
-            Add-Check -Category "Estado" -Name "Manifesto" -Status "PASS" -Detail $manifestPath
+        if ($state.schema_version -in @(1, 2)) {
+            Add-Check -Category "Estado" -Name "Manifesto" -Status "PASS" -Detail "schema=$($state.schema_version) | $manifestPath"
         }
         else {
             Add-Check -Category "Estado" -Name "Manifesto" -Status "WARN" -Detail "Schema desconhecido: $($state.schema_version)"

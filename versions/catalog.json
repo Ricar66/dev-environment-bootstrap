@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "runtimes": {
+    "node": {
+      "name": "Node.js",
+      "windows_command": "node",
+      "linux_command": "node",
+      "version_args": ["--version"]
+    },
+    "python": {
+      "name": "Python",
+      "windows_command": "python",
+      "linux_command": "python3",
+      "version_args": ["--version"]
+    },
+    "dotnet": {
+      "name": ".NET SDK",
+      "windows_command": "dotnet",
+      "linux_command": "dotnet",
+      "version_args": ["--version"]
+    },
+    "java": {
+      "name": "Java",
+      "windows_command": "java",
+      "linux_command": "java",
+      "version_args": ["-version"],
+      "stderr_version": true
+    },
+    "php": {
+      "name": "PHP",
+      "windows_command": "php",
+      "linux_command": "php",
+      "version_args": ["--version"]
+    }
+  },
+  "constraint_examples": [
+    "3.13",
+    "major:24",
+    ">=8",
+    ">=21.0"
+  ]
+}

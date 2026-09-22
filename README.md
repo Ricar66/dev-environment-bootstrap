@@ -169,6 +169,42 @@ Falhas:   0
 
 Veja [Dev Doctor v2](docs/DEV-DOCTOR.md).
 
+## 🔁 Ambientes reproduzíveis — v0.6
+
+Agora o Super Dev Kit consegue exportar a intenção de uma máquina para um lock file e comparar/reproduzir esse ambiente em outra.
+
+Exportar:
+
+```cmd
+tools\export-environment.cmd
+```
+
+```bash
+bash tools/export-environment.sh
+```
+
+Importar primeiro em dry-run:
+
+```cmd
+tools\import-environment.cmd -DryRun
+```
+
+```bash
+bash tools/import-environment.sh --dry-run
+```
+
+Comparar máquina x lock:
+
+```cmd
+tools\compare-environment.cmd
+```
+
+```bash
+bash tools/compare-environment.sh
+```
+
+A v0.6 também suporta constraints portáveis para Node.js, Python, .NET, Java e PHP. Veja [Ambientes reproduzíveis](docs/REPRODUCIBILITY.md).
+
 ## 🪟 Windows
 
 O instalador usa **winget** e pode ser executado tanto pelo CMD quanto pelo PowerShell.
@@ -382,6 +418,9 @@ Veja [examples/README.md](examples/README.md).
 │   ├── node-nest.json
 │   ├── fullstack-react-node.json
 │   └── ...
+├── versions/
+│   ├── catalog.json
+│   └── presets.json
 ├── tools/
 │   ├── run-config.*
 │   ├── install-vscode-extensions.*
@@ -436,6 +475,7 @@ O Super Dev Kit busca ser:
 - [Stacks](docs/STACKS.md)
 - [Arquitetura de módulos](docs/MODULES.md)
 - [Dev Doctor v2](docs/DEV-DOCTOR.md)
+- [Ambientes reproduzíveis v0.6](docs/REPRODUCIBILITY.md)
 - [Perfis](docs/PROFILES.md)
 - [Windows](docs/WINDOWS.md)
 - [Ubuntu / VM](docs/UBUNTU-VM.md)

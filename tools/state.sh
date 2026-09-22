@@ -20,16 +20,37 @@ ensure_state() {
 
   if [[ ! -f "$DEVKIT_MANIFEST" ]]; then
     jq -n       --arg platform "linux"       --arg host "$(hostname)"       --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)"       '{
-        schema_version: 1,
+        schema_version: 2,
         platform: $platform,
         host: $host,
         created_at: $now,
         updated_at: $now,
         profiles: [],
+        stacks: [],
+        modules: [],
+        runtime_versions: {},
         packages: [],
         vscode_extensions: [],
         features: []
       }' > "$DEVKIT_MANIFEST"
+    return 0
+  fi
+
+  local tmp
+  tmp="$(mktemp)"
+
+  if jq     '.schema_version = 2
+     | .profiles = (.profiles // [])
+     | .stacks = (.stacks // [])
+     | .modules = (.modules // [])
+     | .runtime_versions = (.runtime_versions // {})
+     | .packages = (.packages // [])
+     | .vscode_extensions = (.vscode_extensions // [])
+     | .features = (.features // [])'     "$DEVKIT_MANIFEST" > "$tmp"; then
+    mv "$tmp" "$DEVKIT_MANIFEST"
+  else
+    rm -f "$tmp"
+    return 1
   fi
 }
 
@@ -56,6 +77,39 @@ state_add_profile() {
   now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
   state_write_filter     '.profiles = ((.profiles + [$profile]) | unique) | .updated_at = $now'     --arg profile "$profile"     --arg now "$now"
+}
+
+state_add_stack() {
+  local stack="$1"
+  local now
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+  state_write_filter     '.stacks = ((.stacks + [$stack]) | unique) | .updated_at = $now'     --arg stack "$stack"     --arg now "$now"
+}
+
+state_add_module() {
+  local module="$1"
+  local now
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+  state_write_filter     '.modules = ((.modules + [$module]) | unique) | .updated_at = $now'     --arg module "$module"     --arg now "$now"
+}
+
+state_register_runtime_version() {
+  local runtime="$1"
+  local desired="$2"
+  local actual="$3"
+  local policy="${4:-informational}"
+  local now
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+  state_write_filter     '.runtime_versions[$runtime] = {
+        desired: $desired,
+        actual: $actual,
+        policy: $policy,
+        last_seen_at: $now
+      }
+      | .updated_at = $now'     --arg runtime "$runtime"     --arg desired "$desired"     --arg actual "$actual"     --arg policy "$policy"     --arg now "$now"
 }
 
 state_register_package() {

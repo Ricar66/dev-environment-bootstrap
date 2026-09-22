@@ -2,6 +2,32 @@
 
 Todas as mudanças relevantes deste projeto serão documentadas aqui.
 
+## 0.6.0 - 2026-09-22
+
+### Adicionado
+
+- manifesto schema v2 com stacks, módulos e runtimes;
+- migração automática de manifestos schema v1;
+- constraints de versão para Node.js, Python, .NET, Java e PHP;
+- presets de compatibilidade `portable` e `modern`;
+- export de ambiente para `devkit.lock.json`;
+- import de ambiente com dry-run;
+- reprodução baseada prioritariamente em stacks e módulos;
+- comparação entre lock file e máquina real;
+- detecção de drift de pacotes, extensões e runtimes;
+- wrappers CMD para export, import, compare e runtime check;
+- submenu de ambientes reproduzíveis;
+- testes de CI para schema v2, lock files e novos fluxos.
+
+### Reprodutibilidade
+
+A v0.6 trabalha com constraints portáveis de runtime em vez de presumir que winget e apt possuem exatamente os mesmos patch versions. O resultado instalado é validado depois da instalação.
+
+### Segurança
+
+Lock files não exportam senhas, tokens, chaves privadas ou conteúdo de certificados.
+
+
 ## 0.5.0 - 2026-09-22
 
 ### Adicionado

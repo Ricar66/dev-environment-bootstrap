@@ -35,6 +35,8 @@ jobs:
           bash -n tools/restore-vscode.sh
           bash -n tools/backup-git.sh
           bash -n tools/restore-git.sh
+          bash -n tools/install-stack.sh
+          bash -n tools/stack-wizard.sh
 
       - name: Run ShellCheck
         run: |
@@ -53,15 +55,24 @@ jobs:
           shellcheck -S warning tools/restore-vscode.sh
           shellcheck -S warning tools/backup-git.sh
           shellcheck -S warning tools/restore-git.sh
+          shellcheck -S warning tools/install-stack.sh
+          shellcheck -S warning tools/stack-wizard.sh
 
       - name: Validate JSON
-        run: python3 -m json.tool config/devkit.config.example.json > /dev/null
+        run: |
+          python3 -m json.tool config/devkit.config.example.json > /dev/null
+          python3 -m json.tool modules/catalog.json > /dev/null
+          for file in stacks/*.json; do
+            python3 -m json.tool "$file" > /dev/null
+          done
 
       - name: Linux dry-run smoke test
         run: |
           bash linux/bootstrap-vm-ubuntu.sh --profile fullstack --package redis-tools --dry-run
           cp config/devkit.config.example.json config/devkit.config.json
           bash tools/run-config.sh --config config/devkit.config.json --dry-run
+          bash tools/install-stack.sh --stack react --dry-run
+          bash tools/install-stack.sh --stack fullstack-react-node --dry-run
 
       - name: Linux state manifest smoke test
         run: |
@@ -109,7 +120,9 @@ jobs:
             "tools/backup-vscode.ps1",
             "tools/restore-vscode.ps1",
             "tools/backup-git.ps1",
-            "tools/restore-git.ps1"
+            "tools/restore-git.ps1",
+            "tools/install-stack.ps1",
+            "tools/stack-wizard.ps1"
           )
 
           $results = foreach ($file in $files) {
@@ -121,7 +134,12 @@ jobs:
 
       - name: Validate JSON
         shell: pwsh
-        run: Get-Content config/devkit.config.example.json -Raw | ConvertFrom-Json | Out-Null
+        run: |
+          Get-Content config/devkit.config.example.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content modules/catalog.json -Raw | ConvertFrom-Json | Out-Null
+          Get-ChildItem stacks -Filter *.json | ForEach-Object {
+            Get-Content $_.FullName -Raw | ConvertFrom-Json | Out-Null
+          }
 
       - name: Windows PowerShell dry-run smoke test
         shell: powershell
@@ -129,6 +147,8 @@ jobs:
           .\windows\setup-windows.ps1 -Profile FullStack -CustomPackages "Microsoft.AzureCLI" -DryRun
           Copy-Item .\config\devkit.config.example.json .\config\devkit.config.json
           .\tools\run-config.ps1 -ConfigPath .\config\devkit.config.json -DryRun
+          .\tools\install-stack.ps1 -Stack react -DryRun
+          .\tools\install-stack.ps1 -Stack fullstack-react-node -DryRun
 
       - name: Windows state manifest smoke test
         shell: powershell
@@ -157,3 +177,4 @@ jobs:
           call tools\run-config.cmd -ConfigPath .\config\devkit.config.json -DryRun
           call tools\show-state.cmd
           call tools\cleanup.cmd
+          call tools\install-stack.cmd -Stack react -DryRun

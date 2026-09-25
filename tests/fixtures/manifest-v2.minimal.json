@@ -1,0 +1,33 @@
+{
+  "schema_version": 2,
+  "platform": "linux",
+  "host": "fixture-host",
+  "created_at": "2026-09-24T00:00:00Z",
+  "updated_at": "2026-09-24T00:00:00Z",
+  "profiles": [
+    "essential"
+  ],
+  "stacks": [],
+  "modules": [],
+  "runtime_versions": {
+    "node": {
+      "desired": "major:22",
+      "actual": "22.0.0",
+      "policy": "constraint",
+      "last_seen_at": "2026-09-24T00:00:00Z"
+    }
+  },
+  "packages": [
+    {
+      "id": "git",
+      "name": "git",
+      "manager": "apt",
+      "preexisting": true,
+      "installed_by_devkit": false,
+      "present": true,
+      "last_seen_at": "2026-09-24T00:00:00Z"
+    }
+  ],
+  "vscode_extensions": [],
+  "features": []
+}

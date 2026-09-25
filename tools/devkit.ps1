@@ -41,6 +41,7 @@ $exitUnavailable = 69
 $exitInternal = 70
 $script:JsonMode = $false
 $script:DelegatedExitCode = 0
+$script:DirectJson = $false
 
 function Get-DevKitVersion {
     if (Test-Path $versionFile) {
@@ -162,10 +163,11 @@ Descrição:
         "doctor" {
             @"
 Uso:
-  devkit doctor [--json]
+  devkit doctor [--verbose] [--json]
 
 Descrição:
   Executa o check-up do ambiente e informa score, warnings, falhas e drift.
+  --verbose mostra causa provável e comando de verificação para problemas.
 "@
         }
         "state" {
@@ -501,8 +503,19 @@ switch ($command) {
     }
 
     "doctor" {
-        Require-NoArguments -Items $rest -CommandName "doctor"
         $tool = Join-Path $root "diagnostics\dev-doctor.ps1"
+
+        foreach ($token in $rest) {
+            switch ($token) {
+                "--verbose" { $toolArgs += "-VerboseOutput" }
+                default { Stop-Usage "Opção desconhecida em doctor: $token" }
+            }
+        }
+
+        if ($json) {
+            $toolArgs += "-Json"
+            $script:DirectJson = $true
+        }
     }
 
     "stack" {
@@ -747,6 +760,19 @@ switch ($command) {
     default {
         Stop-Usage "Comando desconhecido: $command"
     }
+}
+
+if ($script:DirectJson) {
+    if (-not (Test-Path $tool)) {
+        Write-JsonEnvelope -Command $command -ExitCode $exitUnavailable -Data @{
+            error = "Ferramenta nao encontrada."
+            path  = $tool
+        }
+        exit $exitUnavailable
+    }
+
+    & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $tool @toolArgs
+    exit $LASTEXITCODE
 }
 
 Invoke-Tool -CommandName $command -Path $tool -ToolArgs $toolArgs -Json:$json

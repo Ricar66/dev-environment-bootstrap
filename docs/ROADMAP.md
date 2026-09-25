@@ -168,7 +168,7 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [x] `devkit config path|show|validate`
 - [x] help ampliado para recursos existentes
 - [ ] comentários aprofundados nos scripts críticos
-- [ ] Dev Doctor v3
+- [x] Dev Doctor v3
 - [ ] logs por sessão
 - [ ] `--verbose` e `--debug`
 - [ ] schemas formais

@@ -118,6 +118,30 @@ devkit setup datasql --auto-ca
 
 A CLI traduz esses argumentos para o instalador nativo de cada plataforma.
 
+## Doctor
+
+Check-up padrão:
+
+~~~text
+devkit doctor
+~~~
+
+Mais contexto para warnings e falhas:
+
+~~~text
+devkit doctor --verbose
+~~~
+
+Saída estruturada do Doctor v3:
+
+~~~text
+devkit doctor --json
+~~~
+
+O JSON inclui `health`, score, resumo e a lista de checks com detalhe, causa, sugestão e comando de verificação quando disponíveis.
+
+Veja [DEV-DOCTOR.md](DEV-DOCTOR.md).
+
 ## Stack
 
 ~~~text

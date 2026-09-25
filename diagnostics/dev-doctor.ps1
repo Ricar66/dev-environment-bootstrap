@@ -1,5 +1,26 @@
 #requires -Version 5.1
 
+<#
+.SYNOPSIS
+    Diagnostica o ambiente de desenvolvimento no Windows.
+
+.DESCRIPTION
+    Dev Doctor v3 verifica sistema, ferramentas core, runtimes, Docker, WSL,
+    rede e estado local sem alterar a máquina.
+
+.PARAMETER VerboseOutput
+    Exibe causa provável e comando de verificação para warnings/falhas.
+
+.NOTES
+    As sugestões são somente texto. O Doctor não executa correções automáticas.
+#>
+
+[CmdletBinding()]
+param(
+    [switch]$VerboseOutput,
+    [switch]$Json
+)
+
 $ErrorActionPreference = "Continue"
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -9,6 +30,7 @@ $script:Total = 0
 $script:Passed = 0
 $script:Warnings = 0
 $script:Failed = 0
+$script:Checks = @()
 
 function Add-Check {
     param(
@@ -16,7 +38,9 @@ function Add-Check {
         [Parameter(Mandatory)][string]$Name,
         [Parameter(Mandatory)][ValidateSet("PASS","WARN","FAIL","SKIP")][string]$Status,
         [string]$Detail = "",
-        [string]$Hint = ""
+        [string]$Hint = "",
+        [string]$Cause = "",
+        [string]$Verify = ""
     )
 
     if ($Status -ne "SKIP") {
@@ -45,32 +69,55 @@ function Add-Check {
         }
     }
 
-    Write-Host ("{0,-9} {1,-12} {2}" -f $label, $Category, $Name) -ForegroundColor $color
-
-    if ($Detail) {
-        Write-Host "           $Detail"
+    $script:Checks += [pscustomobject]@{
+        category = $Category
+        name     = $Name
+        status   = $Status
+        detail   = $Detail
+        hint     = $Hint
+        cause    = $Cause
+        verify   = $Verify
     }
 
-    if ($Hint -and $Status -in @("WARN","FAIL")) {
-        Write-Host "           Sugestão: $Hint" -ForegroundColor DarkGray
+    if (-not $Json) {
+        Write-Host ("{0,-9} {1,-12} {2}" -f $label, $Category, $Name) -ForegroundColor $color
+
+        if ($Detail) {
+            Write-Host "           $Detail"
+        }
+
+        if ($Status -in @("WARN","FAIL")) {
+            if ($VerboseOutput -and $Cause) {
+                Write-Host "           Causa provável: $Cause" -ForegroundColor DarkGray
+            }
+
+            if ($Hint) {
+                Write-Host "           Sugestão: $Hint" -ForegroundColor DarkGray
+            }
+
+            if ($VerboseOutput -and $Verify) {
+                Write-Host "           Verifique: $Verify" -ForegroundColor DarkGray
+            }
+        }
     }
 }
 
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "       SUPER DEV KIT - DEV DOCTOR v2" -ForegroundColor Cyan
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host ""
-
-Write-Host "Windows: $([Environment]::OSVersion.VersionString)"
-Write-Host "Host:    $env:COMPUTERNAME"
-Write-Host ""
+if (-not $Json) {
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "       SUPER DEV KIT - DEV DOCTOR v3" -ForegroundColor Cyan
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Windows: $([Environment]::OSVersion.VersionString)"
+    Write-Host "Host:    $env:COMPUTERNAME"
+    Write-Host ""
+}
 
 $drive = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$($env:SystemDrive)'"
 if ($drive -and $drive.FreeSpace -gt 5GB) {
     Add-Check -Category "Sistema" -Name "Espaço em disco" -Status "PASS" -Detail ("{0:N1} GB livres" -f ($drive.FreeSpace / 1GB))
 }
 elseif ($drive) {
-    Add-Check -Category "Sistema" -Name "Espaço em disco" -Status "WARN" -Detail ("{0:N1} GB livres" -f ($drive.FreeSpace / 1GB)) -Hint "Mantenha pelo menos 5 GB livres para instalações e imagens Docker."
+    Add-Check -Category "Sistema" -Name "Espaço em disco" -Status "WARN" -Detail ("{0:N1} GB livres" -f ($drive.FreeSpace / 1GB)) -Hint "Libere espaço antes de instalar SDKs, imagens e dependências." -Cause "A unidade do sistema está abaixo do mínimo recomendado de 5 GB livres." -Verify "Get-PSDrive $($env:SystemDrive.TrimEnd(':'))"
 }
 else {
     Add-Check -Category "Sistema" -Name "Espaço em disco" -Status "WARN" -Detail "Não foi possível consultar o disco."
@@ -83,7 +130,7 @@ foreach ($tool in @("winget","git","curl")) {
         Add-Check -Category "Core" -Name $tool -Status "PASS" -Detail $cmd.Source
     }
     else {
-        Add-Check -Category "Core" -Name $tool -Status "FAIL" -Hint "Instale ou repare a ferramenta e confirme o PATH."
+        Add-Check -Category "Core" -Name $tool -Status "FAIL" -Hint "Instale ou repare a ferramenta e confirme o PATH." -Cause "O comando não foi localizado no PATH da sessão atual." -Verify "Get-Command $tool"
     }
 }
 
@@ -108,11 +155,11 @@ if ($docker) {
             Add-Check -Category "Docker" -Name "Daemon" -Status "PASS"
         }
         else {
-            Add-Check -Category "Docker" -Name "Daemon" -Status "FAIL" -Hint "Abra o Docker Desktop e tente novamente."
+            Add-Check -Category "Docker" -Name "Daemon" -Status "FAIL" -Hint "Abra/reinicie o Docker Desktop e tente novamente." -Cause "A CLI existe, mas o daemon não respondeu." -Verify "docker info"
         }
     }
     catch {
-        Add-Check -Category "Docker" -Name "Daemon" -Status "FAIL" -Hint "Abra o Docker Desktop e tente novamente."
+        Add-Check -Category "Docker" -Name "Daemon" -Status "FAIL" -Hint "Abra/reinicie o Docker Desktop e tente novamente." -Cause "A CLI existe, mas o daemon não respondeu." -Verify "docker info"
     }
 
     try {
@@ -122,11 +169,11 @@ if ($docker) {
             Add-Check -Category "Docker" -Name "Compose" -Status "PASS" -Detail (($compose | Out-String).Trim())
         }
         else {
-            Add-Check -Category "Docker" -Name "Compose" -Status "WARN" -Hint "Verifique a instalação do Docker Compose."
+            Add-Check -Category "Docker" -Name "Compose" -Status "WARN" -Hint "Verifique a instalação do Docker Compose." -Cause "Docker está disponível, mas o subcomando Compose não respondeu." -Verify "docker compose version"
         }
     }
     catch {
-        Add-Check -Category "Docker" -Name "Compose" -Status "WARN" -Hint "Verifique a instalação do Docker Compose."
+        Add-Check -Category "Docker" -Name "Compose" -Status "WARN" -Hint "Verifique a instalação do Docker Compose." -Cause "Docker está disponível, mas o subcomando Compose não respondeu." -Verify "docker compose version"
     }
 }
 else {
@@ -141,11 +188,11 @@ if (Get-Command wsl -ErrorAction SilentlyContinue) {
             Add-Check -Category "WSL" -Name "Status" -Status "PASS"
         }
         else {
-            Add-Check -Category "WSL" -Name "Status" -Status "WARN" -Hint "Execute 'wsl --status' e verifique se falta reiniciar o Windows."
+            Add-Check -Category "WSL" -Name "Status" -Status "WARN" -Hint "Execute 'wsl --status' e verifique se falta reiniciar o Windows." -Cause "O recurso WSL existe, mas o status não retornou sucesso." -Verify "wsl --status"
         }
     }
     catch {
-        Add-Check -Category "WSL" -Name "Status" -Status "WARN" -Hint "Verifique os recursos de virtualização do Windows."
+        Add-Check -Category "WSL" -Name "Status" -Status "WARN" -Hint "Verifique os recursos de virtualização do Windows." -Cause "A consulta ao WSL falhou." -Verify "wsl --status"
     }
 }
 else {
@@ -157,7 +204,7 @@ try {
     Add-Check -Category "Rede" -Name "DNS Docker Hub" -Status "PASS"
 }
 catch {
-    Add-Check -Category "Rede" -Name "DNS Docker Hub" -Status "FAIL" -Hint "Verifique DNS, VPN, proxy ou firewall."
+    Add-Check -Category "Rede" -Name "DNS Docker Hub" -Status "FAIL" -Hint "Verifique DNS, VPN, proxy ou firewall." -Cause "O hostname do Docker Registry não pôde ser resolvido." -Verify "Resolve-DnsName registry-1.docker.io"
 }
 
 try {
@@ -169,7 +216,7 @@ catch {
         Add-Check -Category "Rede" -Name "TLS/HTTPS" -Status "PASS" -Detail "Registry respondeu; autenticação pode ser exigida."
     }
     else {
-        Add-Check -Category "Rede" -Name "TLS/HTTPS" -Status "FAIL" -Hint "Verifique proxy/certificado corporativo com o guia CERTIFICADOS-CORPORATIVOS.md."
+        Add-Check -Category "Rede" -Name "TLS/HTTPS" -Status "FAIL" -Hint "Verifique proxy/certificado corporativo; não desative TLS permanentemente." -Cause "A conexão HTTPS falhou antes de obter uma resposta válida." -Verify "Invoke-WebRequest https://registry-1.docker.io/v2/ -UseBasicParsing"
     }
 }
 
@@ -181,7 +228,7 @@ if (Test-Path $manifestPath) {
             Add-Check -Category "Estado" -Name "Manifesto" -Status "PASS" -Detail "schema=$($state.schema_version) | $manifestPath"
         }
         else {
-            Add-Check -Category "Estado" -Name "Manifesto" -Status "WARN" -Detail "Schema desconhecido: $($state.schema_version)"
+            Add-Check -Category "Estado" -Name "Manifesto" -Status "WARN" -Detail "Schema desconhecido: $($state.schema_version)" -Hint "Revise o manifesto antes de cleanup/import." -Cause "O arquivo existe, mas o schema não é reconhecido pela linha v1." -Verify "Get-Content .\.super-dev-kit\manifest.json -Raw | ConvertFrom-Json | Select-Object schema_version"
         }
 
         $missingOwned = @()
@@ -197,7 +244,7 @@ if (Test-Path $manifestPath) {
             Add-Check -Category "Estado" -Name "Drift de pacotes" -Status "PASS" -Detail "Nenhum pacote gerenciado desapareceu."
         }
         else {
-            Add-Check -Category "Estado" -Name "Drift de pacotes" -Status "WARN" -Detail ($missingOwned -join ", ") -Hint "Execute novamente o perfil/stack ou atualize o manifesto."
+            Add-Check -Category "Estado" -Name "Drift de pacotes" -Status "WARN" -Detail ($missingOwned -join ", ") -Hint "Reaplique a stack/perfil ou atualize o manifesto após confirmar a intenção." -Cause "O manifesto marca pacotes gerenciados como presentes, mas winget não os encontra." -Verify "devkit compare"
         }
     }
     catch {
@@ -215,25 +262,80 @@ else {
     0
 }
 
-Write-Host ""
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "Resumo" -ForegroundColor Cyan
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "Score:    $score%"
-Write-Host "Checks:   $script:Total"
-Write-Host "OK:       $script:Passed" -ForegroundColor Green
-Write-Host "Avisos:   $script:Warnings" -ForegroundColor Yellow
-Write-Host "Falhas:   $script:Failed" -ForegroundColor Red
-
-if ($script:Failed -eq 0 -and $script:Warnings -eq 0) {
-    Write-Host ""
-    Write-Host "Ambiente saudável para os checks aplicáveis." -ForegroundColor Green
+$health = if ($script:Failed -gt 0) {
+    "failed"
 }
-elseif ($script:Failed -eq 0) {
-    Write-Host ""
-    Write-Host "Ambiente utilizável, com pontos de atenção." -ForegroundColor Yellow
+elseif ($script:Warnings -gt 0) {
+    "warning"
+}
+else {
+    "healthy"
+}
+
+if ($Json) {
+    $cleanChecks = @(
+        foreach ($item in $script:Checks) {
+            $result = [ordered]@{
+                category = $item.category
+                name     = $item.name
+                status   = $item.status
+            }
+
+            foreach ($field in @("detail", "hint", "cause", "verify")) {
+                if ($item.$field) {
+                    $result[$field] = $item.$field
+                }
+            }
+
+            [pscustomobject]$result
+        }
+    )
+
+    [ordered]@{
+        schema_version = 1
+        command        = "doctor"
+        success        = $true
+        exit_code      = 0
+        timestamp      = (Get-Date).ToUniversalTime().ToString("o")
+        data           = [ordered]@{
+            doctor_version = 3
+            platform       = "windows"
+            system         = [Environment]::OSVersion.VersionString
+            host           = $env:COMPUTERNAME
+            health         = $health
+            score          = $score
+            summary        = [ordered]@{
+                checks   = $script:Total
+                passed   = $script:Passed
+                warnings = $script:Warnings
+                failed   = $script:Failed
+            }
+            checks         = $cleanChecks
+        }
+    } | ConvertTo-Json -Depth 12
 }
 else {
     Write-Host ""
-    Write-Host "Há falhas que merecem correção antes de continuar." -ForegroundColor Red
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "Resumo" -ForegroundColor Cyan
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "Saúde:    $health"
+    Write-Host "Score:    $score%"
+    Write-Host "Checks:   $script:Total"
+    Write-Host "OK:       $script:Passed" -ForegroundColor Green
+    Write-Host "Avisos:   $script:Warnings" -ForegroundColor Yellow
+    Write-Host "Falhas:   $script:Failed" -ForegroundColor Red
+
+    if ($script:Failed -eq 0 -and $script:Warnings -eq 0) {
+        Write-Host ""
+        Write-Host "Ambiente saudável para os checks aplicáveis." -ForegroundColor Green
+    }
+    elseif ($script:Failed -eq 0) {
+        Write-Host ""
+        Write-Host "Ambiente utilizável, com pontos de atenção." -ForegroundColor Yellow
+    }
+    else {
+        Write-Host ""
+        Write-Host "Há falhas que merecem correção antes de continuar." -ForegroundColor Red
+    }
 }

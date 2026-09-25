@@ -326,6 +326,7 @@ PY
 }
 
 JSON_MODE=0
+DIRECT_JSON=0
 ARGS=()
 
 for item in "$@"; do
@@ -500,6 +501,11 @@ case "$COMMAND" in
         *) usage_error "Opcao desconhecida em doctor: $token" ;;
       esac
     done
+
+    if [[ "$JSON_MODE" -eq 1 ]]; then
+      TOOL_ARGS+=(--json)
+      DIRECT_JSON=1
+    fi
     ;;
 
   stack)
@@ -737,6 +743,16 @@ PY
     usage_error "Comando desconhecido: $COMMAND"
     ;;
 esac
+
+if [[ "$DIRECT_JSON" -eq 1 ]]; then
+  [[ -f "$TOOL" ]] || {
+    json_envelope "$COMMAND" "$EXIT_UNAVAILABLE" '{"error":"Ferramenta nao encontrada."}'
+    exit "$EXIT_UNAVAILABLE"
+  }
+
+  bash "$TOOL" "${TOOL_ARGS[@]}"
+  exit $?
+fi
 
 set +e
 invoke_tool "$COMMAND" "$TOOL" "$JSON_MODE" "$USE_SUDO" "${TOOL_ARGS[@]}"

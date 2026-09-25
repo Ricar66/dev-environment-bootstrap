@@ -94,3 +94,13 @@ jq . result.json
 ~~~
 
 Consulte [CLI.md](CLI.md) para os códigos documentados.
+
+## Schema formal
+
+O envelope público da linha v1 possui JSON Schema versionado em:
+
+~~~text
+schemas/cli-envelope-v1.schema.json
+~~~
+
+Os demais formatos públicos também estão documentados em [SCHEMAS.md](SCHEMAS.md).

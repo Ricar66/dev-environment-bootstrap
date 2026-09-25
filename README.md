@@ -457,6 +457,7 @@ A validação automatizada cobre:
 - [Dev Doctor](docs/DEV-DOCTOR.md)
 - [Ambientes reproduzíveis](docs/REPRODUCIBILITY.md)
 - [Automação JSON](docs/JSON-AUTOMATION.md)
+- [Schemas JSON públicos](docs/SCHEMAS.md)
 - [Certificados corporativos](docs/CERTIFICADOS-CORPORATIVOS.md)
 
 ### Projeto e contribuição

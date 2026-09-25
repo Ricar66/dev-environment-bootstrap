@@ -171,7 +171,7 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [x] Dev Doctor v3
 - [ ] logs por sessão
 - [ ] `--verbose` e `--debug`
-- [ ] schemas formais
+- [x] schemas formais
 - [ ] testes unitários Pester/Bash
 - [ ] cookbook de cenários reais
 - [ ] documentação internacional ampliada

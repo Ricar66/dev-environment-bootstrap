@@ -32,8 +32,11 @@ fi
 
 platform="Linux"
 if [[ -r /etc/os-release ]]; then
-  # PRETTY_NAME is provided by the OS and is used only for display.
-  platform="$(. /etc/os-release; printf '%s' "${PRETTY_NAME:-Linux}")"
+  # Read PRETTY_NAME without sourcing system content into the current shell.
+  detected_platform="$(sed -n 's/^PRETTY_NAME=//p' /etc/os-release | head -n 1)"
+  detected_platform="${detected_platform#\"}"
+  detected_platform="${detected_platform%\"}"
+  [[ -n "$detected_platform" ]] && platform="$detected_platform"
 fi
 
 echo "================================================"

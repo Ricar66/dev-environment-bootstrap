@@ -23,14 +23,9 @@
     },
     "exit_code": {
       "type": "integer",
-      "enum": [
-        0,
-        1,
-        2,
-        64,
-        69,
-        70
-      ]
+      "minimum": 0,
+      "maximum": 255,
+      "description": "Códigos públicos documentados são preferidos; ferramentas delegadas podem preservar códigos nativos."
     },
     "timestamp": {
       "type": "string"

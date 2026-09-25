@@ -41,6 +41,7 @@ $exitUnavailable = 69
 $exitInternal = 70
 $script:JsonMode = $false
 $script:DelegatedExitCode = 0
+$script:DirectJson = $false
 
 function Get-DevKitVersion {
     if (Test-Path $versionFile) {
@@ -510,6 +511,11 @@ switch ($command) {
                 default { Stop-Usage "Opção desconhecida em doctor: $token" }
             }
         }
+
+        if ($json) {
+            $toolArgs += "-Json"
+            $script:DirectJson = $true
+        }
     }
 
     "stack" {
@@ -754,6 +760,19 @@ switch ($command) {
     default {
         Stop-Usage "Comando desconhecido: $command"
     }
+}
+
+if ($script:DirectJson) {
+    if (-not (Test-Path $tool)) {
+        Write-JsonEnvelope -Command $command -ExitCode $exitUnavailable -Data @{
+            error = "Ferramenta nao encontrada."
+            path  = $tool
+        }
+        exit $exitUnavailable
+    }
+
+    & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $tool @toolArgs
+    exit $LASTEXITCODE
 }
 
 Invoke-Tool -CommandName $command -Path $tool -ToolArgs $toolArgs -Json:$json

@@ -1,5 +1,35 @@
 #requires -Version 5.1
 
+<#
+.SYNOPSIS
+    Orquestrador principal da CLI do Super Dev Kit no Windows.
+
+.DESCRIPTION
+    Esta camada interpreta o contrato público da CLI e delega trabalho para
+    scripts especializados. Regras de instalação não devem ser duplicadas aqui.
+
+    Responsabilidades:
+      - validar argumentos públicos;
+      - preservar códigos de saída da linha v1;
+      - selecionar o script interno correto;
+      - padronizar a saída JSON;
+      - manter compatibilidade com Windows PowerShell 5.1.
+
+.SECURITY
+    A CLI não usa Invoke-Expression para argumentos do usuário. Operações
+    potencialmente destrutivas continuam delegadas a ferramentas que exigem
+    flags explícitas, como cleanup --apply.
+
+.NOTES
+    Códigos públicos:
+      0 sucesso
+      1 falha operacional
+      2 drift/política não atendida
+      64 uso inválido
+      69 recurso indisponível
+      70 erro interno
+#>
+
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
@@ -124,6 +154,75 @@ Uso:
 Uso:
   devkit cleanup [--apply] [--include-core] [--include-docker]
                  [--extensions-only] [--packages-only]
+
+Descrição:
+  Mostra um preview por padrão. --apply é necessário para remover itens.
+"@
+        }
+        "doctor" {
+            @"
+Uso:
+  devkit doctor [--json]
+
+Descrição:
+  Executa o check-up do ambiente e informa score, warnings, falhas e drift.
+"@
+        }
+        "state" {
+            @"
+Uso:
+  devkit state [--json]
+
+Descrição:
+  Mostra o manifesto local .super-dev-kit/manifest.json.
+"@
+        }
+        "export" {
+            @"
+Uso:
+  devkit export [--output ARQUIVO] [--config ARQUIVO]
+
+Descrição:
+  Exporta a intenção do ambiente para um lock file portável.
+"@
+        }
+        "inventory" {
+            @"
+Uso:
+  devkit inventory
+
+Descrição:
+  Gera um inventário das ferramentas e versões detectadas.
+"@
+        }
+        "update" {
+            @"
+Uso:
+  devkit update
+
+Descrição:
+  Atualiza o clone com fast-forward e recusa mudanças locais não salvas.
+"@
+        }
+        "info" {
+            @"
+Uso:
+  devkit info [--json]
+
+Descrição:
+  Resume versão, plataforma, shell, Git, configuração, manifesto e CLI global.
+  É somente leitura e não acessa serviços externos.
+"@
+        }
+        "config" {
+            @"
+Uso:
+  devkit config path [--config ARQUIVO]
+  devkit config show [--config ARQUIVO]
+  devkit config validate [--config ARQUIVO]
+
+Descrição:
+  Inspeciona o arquivo declarativo sem alterá-lo.
 "@
         }
         "cli" {
@@ -156,6 +255,8 @@ Comandos:
   inventory   Gera inventario
   cleanup     Cleanup controlado
   update      Atualiza o Super Dev Kit
+  info        Resume a instalação atual
+  config      Inspeciona/valida a configuração
   version     Mostra a versao
   commands    Lista os comandos
   cli         Instala/remove o comando global
@@ -578,6 +679,38 @@ switch ($command) {
     "update" {
         Require-NoArguments -Items $rest -CommandName "update"
         $tool = Join-Path $root "tools\update-devkit.ps1"
+    }
+
+    "info" {
+        Require-NoArguments -Items $rest -CommandName "info"
+        $tool = Join-Path $root "tools\devkit-info.ps1"
+    }
+
+    "config" {
+        if ($rest.Count -lt 1) {
+            Stop-Usage "Use: devkit config <path|show|validate> [--config ARQUIVO]"
+        }
+
+        $action = $rest[0].ToLowerInvariant()
+        if ($action -notin @("path", "show", "validate")) {
+            Stop-Usage "Ação de config inválida: $action"
+        }
+
+        $tool = Join-Path $root "tools\devkit-config.ps1"
+        $toolArgs = @("-Action", $action)
+        $i = 1
+
+        while ($i -lt $rest.Count) {
+            $token = $rest[$i]
+            switch ($token) {
+                "--config" {
+                    if ($i + 1 -ge $rest.Count) { Stop-Usage "--config exige um arquivo." }
+                    $toolArgs += @("-ConfigPath", $rest[$i + 1])
+                    $i += 2
+                }
+                default { Stop-Usage "Opção desconhecida em config: $token" }
+            }
+        }
     }
 
     "cli" {

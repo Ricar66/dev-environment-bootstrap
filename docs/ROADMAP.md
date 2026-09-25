@@ -132,8 +132,8 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [x] drafts LinkedIn e Dev.to/Hashnode
 - [x] roteiro de demonstração
 - [x] checklist seguro para mídia
-- [ ] capturas reais da CLI adicionadas ao README
-- [ ] GIF/vídeo curto capturado de execução real
+- [x] capturas reais da CLI adicionadas ao README
+- [x] GIF/vídeo curto capturado de execução real
 - [ ] labels customizadas de área aplicadas no GitHub
 - [x] good first issues publicados
 
@@ -154,10 +154,31 @@ O Super Dev Kit evolui em versões pequenas para manter a instalação previsív
 - [x] Manual do Usuário
 - [x] Quick Start v1
 - [x] release notes v1.0.0
-- [ ] tag Git v1.0.0
-- [ ] GitHub Release v1.0.0
-- [ ] screenshots reais da CLI
-- [ ] demo curta real
+- [x] tag Git v1.0.0
+- [x] GitHub Release v1.0.0
+- [x] screenshots reais da CLI
+- [x] demo curta real
+
+## v1.1 — Developer Experience e confiabilidade
+
+- [x] roadmap público da v1.1
+- [x] padrão de comentários
+- [x] documentação de internals
+- [x] `devkit info`
+- [x] `devkit config path|show|validate`
+- [x] help ampliado para recursos existentes
+- [ ] comentários aprofundados nos scripts críticos
+- [ ] Dev Doctor v3
+- [ ] logs por sessão
+- [ ] `--verbose` e `--debug`
+- [ ] schemas formais
+- [ ] testes unitários Pester/Bash
+- [ ] cookbook de cenários reais
+- [ ] documentação internacional ampliada
+- [ ] revisão do catálogo de runtimes
+- [ ] release v1.1.0
+
+A v1.1 melhora recursos existentes antes de ampliar o catálogo de tecnologias.
 
 ## Futuro
 

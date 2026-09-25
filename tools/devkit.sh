@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# Super Dev Kit CLI orchestrator.
+#
+# Purpose:
+#   Parse the public command contract and delegate execution to specialized
+#   scripts. Installation logic belongs to modules/tools, not this file.
+#
+# Security:
+#   Arguments are handled as arrays; this file intentionally avoids eval.
+#   Destructive actions remain opt-in in their delegated tools.
+#
+# Public exit codes:
+#   0 success, 1 operational failure, 2 drift/policy mismatch,
+#   64 invalid usage, 69 unavailable dependency, 70 internal error.
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION_FILE="$ROOT_DIR/VERSION"
 COMMANDS_FILE="$ROOT_DIR/cli/commands.json"
@@ -129,6 +143,75 @@ EOF
 Uso:
   devkit cleanup [--apply] [--include-core] [--include-docker]
                  [--extensions-only] [--packages-only]
+
+Descrição:
+  Mostra um preview por padrão. --apply é necessário para remover itens.
+EOF
+      ;;
+    doctor)
+      cat <<'EOF'
+Uso:
+  devkit doctor [--json]
+
+Descrição:
+  Executa o check-up do ambiente e informa score, warnings, falhas e drift.
+EOF
+      ;;
+    state)
+      cat <<'EOF'
+Uso:
+  devkit state [--json]
+
+Descrição:
+  Mostra o manifesto local .super-dev-kit/manifest.json.
+EOF
+      ;;
+    export)
+      cat <<'EOF'
+Uso:
+  devkit export [--output ARQUIVO] [--config ARQUIVO]
+
+Descrição:
+  Exporta a intenção do ambiente para um lock file portável.
+EOF
+      ;;
+    inventory)
+      cat <<'EOF'
+Uso:
+  devkit inventory
+
+Descrição:
+  Gera um inventário das ferramentas e versões detectadas.
+EOF
+      ;;
+    update)
+      cat <<'EOF'
+Uso:
+  devkit update
+
+Descrição:
+  Atualiza o clone com fast-forward e recusa mudanças locais não salvas.
+EOF
+      ;;
+    info)
+      cat <<'EOF'
+Uso:
+  devkit info [--json]
+
+Descrição:
+  Resume versão, plataforma, shell, Git, configuração, manifesto e CLI global.
+  É somente leitura e não acessa serviços externos.
+EOF
+      ;;
+    config)
+      cat <<'EOF'
+Uso:
+  devkit config path [--config ARQUIVO]
+  devkit config show [--config ARQUIVO]
+  devkit config validate [--config ARQUIVO]
+
+Descrição:
+  Inspeciona o arquivo declarativo sem alterá-lo.
 EOF
       ;;
     cli)
@@ -161,6 +244,8 @@ Comandos:
   inventory   Gera inventario
   cleanup     Cleanup controlado
   update      Atualiza o Super Dev Kit
+  info        Resume a instalação atual
+  config      Inspeciona/valida a configuração
   version     Mostra a versao
   commands    Lista os comandos
   cli         Instala/remove o comando global
@@ -570,6 +655,36 @@ case "$COMMAND" in
   update)
     [[ ${#REST[@]} -eq 0 ]] || usage_error "update nao aceita argumentos."
     TOOL="$ROOT_DIR/tools/update-devkit.sh"
+    ;;
+
+  info)
+    [[ ${#REST[@]} -eq 0 ]] || usage_error "info nao aceita argumentos."
+    TOOL="$ROOT_DIR/tools/devkit-info.sh"
+    ;;
+
+  config)
+    [[ ${#REST[@]} -ge 1 ]] || usage_error "Use: devkit config <path|show|validate> [--config ARQUIVO]"
+    action="${REST[0],,}"
+    case "$action" in
+      path|show|validate) ;;
+      *) usage_error "Acao de config invalida: $action" ;;
+    esac
+
+    TOOL="$ROOT_DIR/tools/devkit-config.sh"
+    TOOL_ARGS=("$action")
+    i=1
+
+    while (( i < ${#REST[@]} )); do
+      token="${REST[$i]}"
+      case "$token" in
+        --config)
+          (( i + 1 < ${#REST[@]} )) || usage_error "--config exige um arquivo."
+          TOOL_ARGS+=(--config "${REST[$((i+1))]}")
+          i=$((i+2))
+          ;;
+        *) usage_error "Opcao desconhecida em config: $token" ;;
+      esac
+    done
     ;;
 
   cli)

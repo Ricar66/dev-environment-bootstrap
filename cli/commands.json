@@ -26,6 +26,8 @@
     "update": "Atualiza o Super Dev Kit com fast-forward.",
     "version": "Mostra a versão do Super Dev Kit.",
     "commands": "Lista os comandos disponíveis.",
-    "cli": "Instala, remove ou consulta o shim global da CLI."
+    "cli": "Instala, remove ou consulta o shim global da CLI.",
+    "info": "Resume versão, plataforma, shell, Git, configuração, manifesto e CLI global.",
+    "config": "Mostra, localiza ou valida a configuração declarativa."
   }
 }

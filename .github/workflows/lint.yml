@@ -46,6 +46,8 @@ jobs:
           bash -n tools/project-wizard.sh
           bash -n devkit.sh
           bash -n tools/devkit.sh
+          bash -n tools/devkit-info.sh
+          bash -n tools/devkit-config.sh
           bash -n tools/install-cli.sh
           bash -n tools/uninstall-cli.sh
 
@@ -77,6 +79,8 @@ jobs:
           shellcheck -S warning tools/project-wizard.sh
           shellcheck -S warning devkit.sh
           shellcheck -S warning tools/devkit.sh
+          shellcheck -S warning tools/devkit-info.sh
+          shellcheck -S warning tools/devkit-config.sh
           shellcheck -S warning tools/install-cli.sh
           shellcheck -S warning tools/uninstall-cli.sh
 
@@ -120,6 +124,12 @@ jobs:
         run: |
           bash devkit.sh version
           bash devkit.sh commands
+          bash devkit.sh help info
+          bash devkit.sh help config
+          bash devkit.sh info
+          bash devkit.sh config path
+          bash devkit.sh config show --config config/devkit.config.example.json
+          bash devkit.sh config validate --config config/devkit.config.example.json
           bash devkit.sh setup fullstack --dry-run
           bash devkit.sh stack react --dry-run
           bash devkit.sh project react-vite "CLI React" --output .super-dev-kit/cli-projects --dry-run
@@ -133,6 +143,10 @@ jobs:
 
           bash devkit.sh commands --json > /tmp/devkit-commands.json
           python3 -m json.tool /tmp/devkit-commands.json > /dev/null
+
+          bash devkit.sh info --json > /tmp/devkit-info.json
+          python3 -m json.tool /tmp/devkit-info.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-info.json"))["command"])')" = "info"
 
           bash devkit.sh stack react --dry-run --json > /tmp/devkit-stack.json
           python3 -m json.tool /tmp/devkit-stack.json > /dev/null
@@ -264,6 +278,8 @@ jobs:
             "tools/project-wizard.ps1",
             "devkit.ps1",
             "tools/devkit.ps1",
+            "tools/devkit-info.ps1",
+            "tools/devkit-config.ps1",
             "tools/install-cli.ps1",
             "tools/uninstall-cli.ps1"
           )
@@ -319,6 +335,12 @@ jobs:
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\devkit.ps1 version
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 version
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 commands
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 help info
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 help config
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 info
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 config path
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 config show --config .\config\devkit.config.example.json
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 config validate --config .\config\devkit.config.example.json
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 setup fullstack --dry-run
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 stack react --dry-run
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 project react-vite "CLI React" --output .\.super-dev-kit\cli-projects --dry-run
@@ -332,6 +354,10 @@ jobs:
 
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 commands --json | Set-Content .\devkit-commands.json -Encoding UTF8
           Get-Content .\devkit-commands.json -Raw | ConvertFrom-Json | Out-Null
+
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 info --json | Set-Content .\devkit-info.json -Encoding UTF8
+          $infoJson = Get-Content .\devkit-info.json -Raw | ConvertFrom-Json
+          if ($infoJson.command -ne "info") { throw "JSON de info inválido" }
 
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 stack react --dry-run --json | Set-Content .\devkit-stack.json -Encoding UTF8
           $stackJson = Get-Content .\devkit-stack.json -Raw | ConvertFrom-Json

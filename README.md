@@ -107,6 +107,8 @@ devkit backup vscode
 devkit inventory
 devkit cleanup
 devkit update
+devkit info
+devkit config validate
 ~~~
 
 ## ✨ Principais recursos
@@ -460,6 +462,8 @@ A validação automatizada cobre:
 ### Projeto e contribuição
 
 - [Arquitetura](docs/ARCHITECTURE.md)
+- [Internals](docs/INTERNALS.md)
+- [Padrão de comentários](docs/COMMENTING-GUIDE.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [Código de Conduta](CODE_OF_CONDUCT.md)
 - [Versionamento](docs/VERSIONING.md)

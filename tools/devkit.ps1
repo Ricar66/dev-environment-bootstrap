@@ -162,10 +162,11 @@ Descrição:
         "doctor" {
             @"
 Uso:
-  devkit doctor [--json]
+  devkit doctor [--verbose] [--json]
 
 Descrição:
   Executa o check-up do ambiente e informa score, warnings, falhas e drift.
+  --verbose mostra causa provável e comando de verificação para problemas.
 "@
         }
         "state" {
@@ -501,8 +502,14 @@ switch ($command) {
     }
 
     "doctor" {
-        Require-NoArguments -Items $rest -CommandName "doctor"
         $tool = Join-Path $root "diagnostics\dev-doctor.ps1"
+
+        foreach ($token in $rest) {
+            switch ($token) {
+                "--verbose" { $toolArgs += "-VerboseOutput" }
+                default { Stop-Usage "Opção desconhecida em doctor: $token" }
+            }
+        }
     }
 
     "stack" {

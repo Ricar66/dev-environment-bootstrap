@@ -136,6 +136,11 @@ jobs:
           bash devkit.sh runtime node 22 --manager fnm --dry-run
           bash devkit.sh import --lock tests/fixtures/environment-lock.minimal.json --dry-run
           bash devkit.sh compare --lock tests/fixtures/environment-lock.minimal.json
+          bash devkit.sh doctor --verbose
+          bash devkit.sh doctor --json > /tmp/devkit-doctor.json
+          python3 -m json.tool /tmp/devkit-doctor.json > /dev/null
+          test "$(python3 -c 'import json; print(json.load(open("/tmp/devkit-doctor.json"))["data"]["doctor_version"])')" = "3"
+          test "$(python3 -c 'import json; print(isinstance(json.load(open("/tmp/devkit-doctor.json"))["data"]["checks"], list))')" = "True"
 
           bash devkit.sh version --json > /tmp/devkit-version.json
           python3 -m json.tool /tmp/devkit-version.json > /dev/null
@@ -347,6 +352,11 @@ jobs:
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 runtime node 22 --manager fnm --dry-run
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 import --lock .\tests\fixtures\environment-lock.minimal.json --dry-run
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 compare --lock .\tests\fixtures\environment-lock.minimal.json
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 doctor --verbose
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 doctor --json | Set-Content .\devkit-doctor.json -Encoding UTF8
+          $doctorJson = Get-Content .\devkit-doctor.json -Raw | ConvertFrom-Json
+          if ($doctorJson.data.doctor_version -ne 3) { throw "Doctor JSON deve usar doctor_version=3" }
+          if ($null -eq $doctorJson.data.checks) { throw "Doctor JSON não contém checks" }
 
           powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\devkit.ps1 version --json | Set-Content .\devkit-version.json -Encoding UTF8
           $versionJson = Get-Content .\devkit-version.json -Raw | ConvertFrom-Json

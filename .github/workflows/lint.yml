@@ -93,6 +93,13 @@ jobs:
           python3 -m json.tool versions/managers.json > /dev/null
           python3 -m json.tool templates/catalog.json > /dev/null
           python3 -m json.tool cli/commands.json > /dev/null
+          python3 -m json.tool schemas/config-v1.schema.json > /dev/null
+          python3 -m json.tool schemas/manifest-v2.schema.json > /dev/null
+          python3 -m json.tool schemas/environment-lock-v1.schema.json > /dev/null
+          python3 -m json.tool schemas/cli-envelope-v1.schema.json > /dev/null
+          python3 -m json.tool tests/fixtures/manifest-v2.minimal.json > /dev/null
+          python3 -m json.tool tests/fixtures/cli-envelope-v1.minimal.json > /dev/null
+          python3 -m json.tool tests/fixtures/environment-lock.invalid-schema-version.json > /dev/null
           python3 -m json.tool templates/react-vite/package.json > /dev/null
           python3 -m json.tool templates/node-nest/package.json > /dev/null
           python3 -m json.tool templates/node-nest/tsconfig.json > /dev/null

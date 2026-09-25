@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ricar66/dev-environment-bootstrap/schemas/cli-envelope-v1.schema.json",
+  "title": "Super Dev Kit CLI Envelope v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "command",
+    "success",
+    "exit_code",
+    "timestamp"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "exit_code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255,
+      "description": "Códigos públicos documentados são preferidos; ferramentas delegadas podem preservar códigos nativos."
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "data": {},
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

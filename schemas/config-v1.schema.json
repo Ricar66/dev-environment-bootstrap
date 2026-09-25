@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ricar66/dev-environment-bootstrap/schemas/config-v1.schema.json",
+  "title": "Super Dev Kit Config v1",
+  "type": "object",
+  "properties": {
+    "profile": {
+      "type": "string",
+      "enum": [
+        "essential",
+        "frontend",
+        "backend",
+        "fullstack",
+        "datasql",
+        "devops"
+      ]
+    },
+    "install_vscode_extensions": {
+      "type": "boolean"
+    },
+    "non_interactive": {
+      "type": "boolean"
+    },
+    "runtime_versions": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "type": "string"
+        },
+        "python": {
+          "type": "string"
+        },
+        "dotnet": {
+          "type": "string"
+        },
+        "java": {
+          "type": "string"
+        },
+        "php": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "docker": {
+          "type": "boolean"
+        },
+        "wsl": {
+          "type": "boolean"
+        },
+        "extras": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "certificate": {
+      "type": "object",
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "proxy": {
+      "type": "object",
+      "properties": {
+        "http": {
+          "type": "string"
+        },
+        "https": {
+          "type": "string"
+        },
+        "no_proxy": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "custom": {
+      "type": "object",
+      "properties": {
+        "windows_packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "linux_packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vscode_extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "profile"
+  ],
+  "additionalProperties": true
+}

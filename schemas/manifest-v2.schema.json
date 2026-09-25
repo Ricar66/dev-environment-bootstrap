@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ricar66/dev-environment-bootstrap/schemas/manifest-v2.schema.json",
+  "title": "Super Dev Kit Local Manifest v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "platform",
+    "host",
+    "created_at",
+    "updated_at",
+    "profiles",
+    "stacks",
+    "modules",
+    "runtime_versions",
+    "packages",
+    "vscode_extensions",
+    "features"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "windows",
+        "linux"
+      ]
+    },
+    "host": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stacks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "desired",
+          "actual",
+          "policy",
+          "last_seen_at"
+        ],
+        "properties": {
+          "desired": {
+            "type": "string"
+          },
+          "actual": {
+            "type": "string"
+          },
+          "policy": {
+            "type": "string"
+          },
+          "last_seen_at": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "manager",
+          "preexisting",
+          "installed_by_devkit",
+          "present",
+          "last_seen_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "manager": {
+            "type": "string"
+          },
+          "preexisting": {
+            "type": "boolean"
+          },
+          "installed_by_devkit": {
+            "type": "boolean"
+          },
+          "present": {
+            "type": "boolean"
+          },
+          "last_seen_at": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "vscode_extensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "preexisting",
+          "installed_by_devkit",
+          "present",
+          "last_seen_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "preexisting": {
+            "type": "boolean"
+          },
+          "installed_by_devkit": {
+            "type": "boolean"
+          },
+          "present": {
+            "type": "boolean"
+          },
+          "last_seen_at": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "preexisting",
+          "enabled_by_devkit",
+          "present",
+          "last_seen_at"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "preexisting": {
+            "type": "boolean"
+          },
+          "enabled_by_devkit": {
+            "type": "boolean"
+          },
+          "present": {
+            "type": "boolean"
+          },
+          "last_seen_at": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -34,6 +34,9 @@ jobs:
         run: |
           ./devkit.ps1 version
           ./devkit.ps1 commands
+          ./devkit.ps1 info
+          ./devkit.ps1 config validate --config ./config/devkit.config.example.json
+          ./devkit.ps1 help config
           ./devkit.ps1 stack react --dry-run
           ./devkit.ps1 project react-vite "PS7 Demo" --output ./.super-dev-kit/ps7 --dry-run
           ./devkit.ps1 runtime node 22 --manager fnm --dry-run
@@ -59,6 +62,9 @@ jobs:
               DEBIAN_FRONTEND=noninteractive apt-get install -y python3 git ca-certificates >/dev/null
 
               bash devkit.sh version
+              bash devkit.sh info
+              bash devkit.sh config validate --config config/devkit.config.example.json
+              bash devkit.sh help info
               bash devkit.sh setup essential --dry-run
               bash devkit.sh stack react --dry-run
               bash devkit.sh project react-vite public-demo --output /tmp --dry-run

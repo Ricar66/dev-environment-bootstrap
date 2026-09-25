@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Ricar66/dev-environment-bootstrap/schemas/environment-lock-v1.schema.json",
+  "title": "Super Dev Kit Environment Lock v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "devkit_version",
+    "source_platform",
+    "profiles",
+    "stacks",
+    "modules",
+    "runtime_versions",
+    "packages",
+    "vscode_extensions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "devkit_version": {
+      "type": "string"
+    },
+    "source_platform": {
+      "type": "string",
+      "enum": [
+        "windows",
+        "linux",
+        "portable"
+      ]
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stacks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "actual",
+          "constraint"
+        ],
+        "properties": {
+          "actual": {
+            "type": "string"
+          },
+          "constraint": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "packages": {
+      "type": "object",
+      "required": [
+        "windows",
+        "linux"
+      ],
+      "properties": {
+        "windows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "linux": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "vscode_extensions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

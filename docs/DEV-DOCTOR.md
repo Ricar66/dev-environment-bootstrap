@@ -1,34 +1,134 @@
-# Dev Doctor v2
+# Dev Doctor v3
 
-O Dev Doctor da v0.5 funciona como um check-up do ambiente.
+O Dev Doctor é o check-up do ambiente do Super Dev Kit.
 
-Ele verifica somente os checks aplicáveis e apresenta:
+A v3 mantém o comportamento seguro das versões anteriores e melhora **explicação, diagnóstico e automação**.
 
-- categoria;
-- status;
-- detalhe;
-- sugestão de correção;
-- score final.
+## Princípio
+
+O Doctor é **somente leitura**.
+
+Ele pode sugerir comandos de correção, mas não executa automaticamente reparos, instalações, remoções ou alterações de configuração.
 
 ## Executar
 
-CMD:
+CLI recomendada:
 
-```cmd
-diagnostics\dev-doctor.cmd
-```
+~~~text
+devkit doctor
+~~~
 
-PowerShell:
+Diagnóstico detalhado:
 
-```powershell
+~~~text
+devkit doctor --verbose
+~~~
+
+Saída estruturada:
+
+~~~text
+devkit doctor --json
+~~~
+
+Combinar detalhes e JSON:
+
+~~~text
+devkit doctor --verbose --json
+~~~
+
+Os scripts diretos continuam disponíveis:
+
+### PowerShell
+
+~~~powershell
 .\diagnostics\dev-doctor.ps1
-```
+.\diagnostics\dev-doctor.ps1 -VerboseOutput
+.\diagnostics\dev-doctor.ps1 -Json
+~~~
 
-Linux:
+### Linux
 
-```bash
+~~~bash
 bash diagnostics/dev-doctor.sh
-```
+bash diagnostics/dev-doctor.sh --verbose
+bash diagnostics/dev-doctor.sh --json
+~~~
+
+## O que mudou na v3
+
+### Causa provável
+
+Warnings e falhas podem explicar por que o problema costuma acontecer.
+
+Exemplo:
+
+~~~text
+[FALHA]   Docker       Daemon
+          Causa provável: A CLI existe, mas não conseguiu conversar com o daemon.
+          Sugestão: Abra/reinicie o Docker e tente novamente.
+          Verifique: docker info
+~~~
+
+A causa é uma hipótese diagnóstica, não uma afirmação absoluta.
+
+### Comando de verificação
+
+Com `--verbose`, o Doctor mostra um comando que ajuda o usuário a confirmar o problema antes de alterar a máquina.
+
+### Health
+
+O resumo inclui um estado simples:
+
+~~~text
+healthy
+warning
+failed
+~~~
+
+- `healthy`: nenhum warning/failure aplicável;
+- `warning`: não há falhas, mas existem pontos de atenção;
+- `failed`: pelo menos um check obrigatório falhou.
+
+### JSON estruturado
+
+O Doctor v3 produz checks estruturados dentro do envelope público da CLI.
+
+Exemplo reduzido:
+
+~~~json
+{
+  "schema_version": 1,
+  "command": "doctor",
+  "success": true,
+  "exit_code": 0,
+  "data": {
+    "doctor_version": 3,
+    "platform": "linux",
+    "health": "warning",
+    "score": 92,
+    "summary": {
+      "checks": 13,
+      "passed": 12,
+      "warnings": 1,
+      "failed": 0
+    },
+    "checks": [
+      {
+        "category": "Docker",
+        "name": "Grupo docker",
+        "status": "WARN",
+        "cause": "O usuário atual não pertence ao grupo docker; comandos sem sudo podem falhar.",
+        "hint": "sudo usermod -aG docker $USER && newgrp docker",
+        "verify": "id -nG $USER"
+      }
+    ]
+  }
+}
+~~~
+
+`success: true` significa que o diagnóstico foi executado corretamente. A saúde do ambiente é representada por `data.health`, `summary` e pelos checks.
+
+Isso preserva compatibilidade com o comportamento histórico do Doctor, que não transforma automaticamente warnings do ambiente em erro da própria CLI.
 
 ## Categorias
 
@@ -38,36 +138,69 @@ Espaço livre e informações básicas.
 
 ### Core
 
-Ferramentas essenciais como Git, curl, winget/jq.
+Ferramentas essenciais, como Git, curl, winget e jq.
 
 ### Runtime
 
-Node, npm, Python e VS Code quando presentes.
+Runtimes e ferramentas opcionais detectadas no ambiente.
 
 ### Docker
 
-CLI, daemon, Compose e permissões.
+CLI, daemon, Compose e, no Linux, acesso pelo grupo docker.
+
+### SSH / WSL
+
+No Linux, verifica disponibilidade/serviço SSH.
+
+No Windows, verifica o status do WSL quando disponível.
 
 ### Rede
 
-DNS e conexão HTTPS com o Docker Registry.
+DNS e HTTPS para o Docker Registry.
+
+Falhas podem envolver:
+
+- DNS;
+- VPN;
+- proxy;
+- firewall;
+- inspeção HTTPS;
+- CA corporativa.
+
+O Doctor não recomenda desabilitar TLS.
 
 ### Estado
 
-Validade do manifesto da v0.4 e detecção de **drift**.
-
-Drift significa que o manifesto diz que uma ferramenta gerenciada deveria estar presente, mas ela desapareceu da máquina.
+Valida o manifesto local e procura drift de pacotes gerenciados.
 
 ## Score
 
-O score considera os checks aplicáveis:
+O score considera apenas checks aplicáveis. Itens `SKIP` não reduzem a pontuação.
 
-```text
+~~~text
+Saúde:    warning
 Score:    92%
 Checks:   13
 OK:       12
 Avisos:   1
 Falhas:   0
-```
+~~~
 
-Itens opcionais que não fazem parte do ambiente são exibidos como `SKIP` e não reduzem a pontuação.
+## Como usar em suporte
+
+Antes de abrir uma issue:
+
+~~~text
+devkit version
+devkit info
+devkit doctor --verbose
+devkit state
+~~~
+
+Para automação ou coleta estruturada:
+
+~~~text
+devkit doctor --json
+~~~
+
+Revise qualquer saída antes de compartilhá-la publicamente.

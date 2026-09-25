@@ -17,7 +17,8 @@
 
 [CmdletBinding()]
 param(
-    [switch]$VerboseOutput
+    [switch]$VerboseOutput,
+    [switch]$Json
 )
 
 $ErrorActionPreference = "Continue"
@@ -29,6 +30,7 @@ $script:Total = 0
 $script:Passed = 0
 $script:Warnings = 0
 $script:Failed = 0
+$script:Checks = @()
 
 function Add-Check {
     param(
@@ -67,35 +69,48 @@ function Add-Check {
         }
     }
 
-    Write-Host ("{0,-9} {1,-12} {2}" -f $label, $Category, $Name) -ForegroundColor $color
-
-    if ($Detail) {
-        Write-Host "           $Detail"
+    $script:Checks += [pscustomobject]@{
+        category = $Category
+        name     = $Name
+        status   = $Status
+        detail   = $Detail
+        hint     = $Hint
+        cause    = $Cause
+        verify   = $Verify
     }
 
-    if ($Status -in @("WARN","FAIL")) {
-        if ($VerboseOutput -and $Cause) {
-            Write-Host "           Causa provável: $Cause" -ForegroundColor DarkGray
+    if (-not $Json) {
+        Write-Host ("{0,-9} {1,-12} {2}" -f $label, $Category, $Name) -ForegroundColor $color
+
+        if ($Detail) {
+            Write-Host "           $Detail"
         }
 
-        if ($Hint) {
-            Write-Host "           Sugestão: $Hint" -ForegroundColor DarkGray
-        }
+        if ($Status -in @("WARN","FAIL")) {
+            if ($VerboseOutput -and $Cause) {
+                Write-Host "           Causa provável: $Cause" -ForegroundColor DarkGray
+            }
 
-        if ($VerboseOutput -and $Verify) {
-            Write-Host "           Verifique: $Verify" -ForegroundColor DarkGray
+            if ($Hint) {
+                Write-Host "           Sugestão: $Hint" -ForegroundColor DarkGray
+            }
+
+            if ($VerboseOutput -and $Verify) {
+                Write-Host "           Verifique: $Verify" -ForegroundColor DarkGray
+            }
         }
     }
 }
 
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "       SUPER DEV KIT - DEV DOCTOR v3" -ForegroundColor Cyan
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host ""
-
-Write-Host "Windows: $([Environment]::OSVersion.VersionString)"
-Write-Host "Host:    $env:COMPUTERNAME"
-Write-Host ""
+if (-not $Json) {
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "       SUPER DEV KIT - DEV DOCTOR v3" -ForegroundColor Cyan
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Windows: $([Environment]::OSVersion.VersionString)"
+    Write-Host "Host:    $env:COMPUTERNAME"
+    Write-Host ""
+}
 
 $drive = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$($env:SystemDrive)'"
 if ($drive -and $drive.FreeSpace -gt 5GB) {
@@ -247,25 +262,80 @@ else {
     0
 }
 
-Write-Host ""
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "Resumo" -ForegroundColor Cyan
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "Score:    $score%"
-Write-Host "Checks:   $script:Total"
-Write-Host "OK:       $script:Passed" -ForegroundColor Green
-Write-Host "Avisos:   $script:Warnings" -ForegroundColor Yellow
-Write-Host "Falhas:   $script:Failed" -ForegroundColor Red
-
-if ($script:Failed -eq 0 -and $script:Warnings -eq 0) {
-    Write-Host ""
-    Write-Host "Ambiente saudável para os checks aplicáveis." -ForegroundColor Green
+$health = if ($script:Failed -gt 0) {
+    "failed"
 }
-elseif ($script:Failed -eq 0) {
-    Write-Host ""
-    Write-Host "Ambiente utilizável, com pontos de atenção." -ForegroundColor Yellow
+elseif ($script:Warnings -gt 0) {
+    "warning"
+}
+else {
+    "healthy"
+}
+
+if ($Json) {
+    $cleanChecks = @(
+        foreach ($item in $script:Checks) {
+            $result = [ordered]@{
+                category = $item.category
+                name     = $item.name
+                status   = $item.status
+            }
+
+            foreach ($field in @("detail", "hint", "cause", "verify")) {
+                if ($item.$field) {
+                    $result[$field] = $item.$field
+                }
+            }
+
+            [pscustomobject]$result
+        }
+    )
+
+    [ordered]@{
+        schema_version = 1
+        command        = "doctor"
+        success        = $true
+        exit_code      = 0
+        timestamp      = (Get-Date).ToUniversalTime().ToString("o")
+        data           = [ordered]@{
+            doctor_version = 3
+            platform       = "windows"
+            system         = [Environment]::OSVersion.VersionString
+            host           = $env:COMPUTERNAME
+            health         = $health
+            score          = $score
+            summary        = [ordered]@{
+                checks   = $script:Total
+                passed   = $script:Passed
+                warnings = $script:Warnings
+                failed   = $script:Failed
+            }
+            checks         = $cleanChecks
+        }
+    } | ConvertTo-Json -Depth 12
 }
 else {
     Write-Host ""
-    Write-Host "Há falhas que merecem correção antes de continuar." -ForegroundColor Red
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "Resumo" -ForegroundColor Cyan
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "Saúde:    $health"
+    Write-Host "Score:    $score%"
+    Write-Host "Checks:   $script:Total"
+    Write-Host "OK:       $script:Passed" -ForegroundColor Green
+    Write-Host "Avisos:   $script:Warnings" -ForegroundColor Yellow
+    Write-Host "Falhas:   $script:Failed" -ForegroundColor Red
+
+    if ($script:Failed -eq 0 -and $script:Warnings -eq 0) {
+        Write-Host ""
+        Write-Host "Ambiente saudável para os checks aplicáveis." -ForegroundColor Green
+    }
+    elseif ($script:Failed -eq 0) {
+        Write-Host ""
+        Write-Host "Ambiente utilizável, com pontos de atenção." -ForegroundColor Yellow
+    }
+    else {
+        Write-Host ""
+        Write-Host "Há falhas que merecem correção antes de continuar." -ForegroundColor Red
+    }
 }

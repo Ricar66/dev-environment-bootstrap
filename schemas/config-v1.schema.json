@@ -40,7 +40,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "git": {
       "type": "object",
@@ -52,7 +52,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "features": {
       "type": "object",
@@ -67,7 +67,7 @@
           "type": "boolean"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "certificate": {
       "type": "object",
@@ -79,7 +79,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "proxy": {
       "type": "object",
@@ -94,7 +94,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "custom": {
       "type": "object",
@@ -118,11 +118,11 @@
           }
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     }
   },
   "required": [
     "profile"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }

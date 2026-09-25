@@ -94,6 +94,8 @@ devkit backup
 devkit inventory
 devkit cleanup
 devkit update
+devkit info
+devkit config
 ~~~
 
 ## Setup
@@ -158,6 +160,52 @@ Dry-run:
 devkit runtime node 22 --manager fnm --dry-run
 ~~~
 
+## Info
+
+Resumo somente leitura da instalação atual:
+
+~~~text
+devkit info
+~~~
+
+Inclui versão do kit, plataforma, shell, branch/commit do clone, caminhos de configuração e manifesto e status do shim global.
+
+Também pode ser usado com a opção global JSON:
+
+~~~text
+devkit info --json
+~~~
+
+Como `info` é uma ferramenta delegada nesta fase, o envelope JSON preserva a saída humana no campo `output`.
+
+## Config
+
+Descobrir o caminho padrão:
+
+~~~text
+devkit config path
+~~~
+
+Exibir o arquivo atual:
+
+~~~text
+devkit config show
+~~~
+
+Validar sintaxe e regras básicas:
+
+~~~text
+devkit config validate
+~~~
+
+Usar outro arquivo:
+
+~~~text
+devkit config validate --config ./config/minha-config.json
+~~~
+
+`config` é somente leitura: ele não cria nem altera o arquivo.
+
 ## Estado e ambientes reproduzíveis
 
 ~~~text
@@ -221,7 +269,7 @@ Exemplo de envelope:
   "exit_code": 0,
   "timestamp": "2026-09-22T15:00:00Z",
   "data": {
-    "version": "0.8.0",
+    "version": "1.0.0",
     "platform": "linux"
   }
 }
@@ -229,7 +277,7 @@ Exemplo de envelope:
 
 Para scripts legados que ainda produzem texto, a CLI preserva a saída dentro do campo output.
 
-Assim a v0.8 adiciona automação sem obrigar a reescrever de uma vez toda a base já validada.
+A linha v1 preserva esse comportamento para manter compatibilidade com scripts já validados.
 
 ## Contrato estável da v1
 
@@ -252,9 +300,9 @@ Os códigos existentes dos scripts delegados são preservados sempre que possív
 
 ## Migração dos comandos antigos
 
-A v0.8 não exige migração imediata. Os comandos antigos continuam válidos, mas existe uma equivalência direta:
+A CLI não exige migração imediata. Os comandos antigos continuam válidos, mas existe uma equivalência direta:
 
-| Antes | CLI v0.8 |
+| Antes | CLI v1 |
 | --- | --- |
 | `setup.cmd` / `.\setup.ps1` / `bash setup.sh` | `devkit setup` |
 | `diagnostics/dev-doctor.*` | `devkit doctor` |

@@ -151,10 +151,11 @@ EOF
     doctor)
       cat <<'EOF'
 Uso:
-  devkit doctor [--json]
+  devkit doctor [--verbose] [--json]
 
 Descrição:
   Executa o check-up do ambiente e informa score, warnings, falhas e drift.
+  --verbose mostra causa provável e comando de verificação para problemas.
 EOF
       ;;
     state)
@@ -492,8 +493,13 @@ case "$COMMAND" in
     ;;
 
   doctor)
-    [[ ${#REST[@]} -eq 0 ]] || usage_error "doctor nao aceita argumentos."
     TOOL="$ROOT_DIR/diagnostics/dev-doctor.sh"
+    for token in "${REST[@]}"; do
+      case "$token" in
+        --verbose) TOOL_ARGS+=(--verbose) ;;
+        *) usage_error "Opcao desconhecida em doctor: $token" ;;
+      esac
+    done
     ;;
 
   stack)
